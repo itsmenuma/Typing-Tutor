@@ -1,9 +1,9 @@
 # Typing-Tutor
 <br>
-Typing Tutor is a console-based application that helps users improve their typing speed and accuracy. The program selects random paragraphs from a text file, and users are required to type them as quickly and accurately as possible. It provides feedback on typing speed (characters per minute) and accuracy, and keeps track of previous attempts.
+Typing Tutor is a console-based application that helps users improve their typing speed and accuracy. The program selects random paragraphs from a text file, and users are required to type them as quickly and accurately as possible. It provides feedback on typing speed (characters per minute) and accuracy and keeps track of previous attempts.
 <br>
 <br>
-###Features
+Features
 <br>
 Random Paragraph Selection: The program randomly selects a paragraph from a file for each typing session.
 <br>
@@ -14,7 +14,7 @@ Difficulty Levels: Users can select from three difficulty levels: Easy, Medium, 
 Tracking Attempts: The program keeps track of up to 10 typing attempts and displays the statistics for each.
 <br>
 <br>
-### Getting Started
+Getting Started
 <br>
 Prerequisites
 <br>
@@ -25,7 +25,7 @@ A C compiler (such as GCC)
 A text file named paragraphs.txt containing paragraphs for typing practice
 <br>
 <br>
-### Usage
+Usage
 1. Select Difficulty Level:
 <br>
 The program prompts you to choose a difficulty level (Easy, Medium, Hard). This affects the speed and accuracy calculations.
@@ -43,24 +43,24 @@ After typing, the program displays your typing speed, accuracy, and the number o
 You can choose to continue typing or exit the program. The program tracks up to 10 attempts and displays them at the end.
 <br>
 <br>
-### Files
+Files
 <br>
 typing_tutor.c: The main source code file for the Typing Tutor program.
 <br>
 paragraphs.txt: A text file containing paragraphs for typing practice.
 <br>
 <br>
-### Contributing
+Contributing
 <br>
 Feel free to fork this repository and submit pull requests for any improvements or additional features. If you encounter any issues, please open an issue in the repository.
 <br>
 <br>
-### License
+License
 <br>
 This project is licensed under the MIT License - see the LICENSE file for details.
 <br>
 <br>
-### Acknowledgments
+Acknowledgments
 <br>
 The concept of this program is inspired by various typing tutor applications that help improve typing speed and accuracy.
 <br>
