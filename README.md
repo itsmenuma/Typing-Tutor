@@ -3,7 +3,7 @@
 Typing Tutor is a console-based application that helps users improve their typing speed and accuracy. The program selects random paragraphs from a text file, and users are required to type them as quickly and accurately as possible. It provides feedback on typing speed (characters per minute) and accuracy, and keeps track of previous attempts.
 <br>
 <br>
-### Features
+###Features
 <br>
 Random Paragraph Selection: The program randomly selects a paragraph from a file for each typing session.
 <br>
