@@ -26,6 +26,7 @@ A text file named paragraphs.txt containing paragraphs for typing practice
 <br>
 <br>
 Usage
+<br>
 1. Select Difficulty Level:
 <br>
 The program prompts you to choose a difficulty level (Easy, Medium, Hard). This affects the speed and accuracy calculations.
