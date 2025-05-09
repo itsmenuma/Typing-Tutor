@@ -90,8 +90,8 @@ void printTypingStats(double elapsedTime, const char* input, const char* correct
 
     int totalCharacters = minLen;//total no of chacaters is stored in this variavble
     double accuracy = (double)correctCount / totalCharacters * 100;//accuracy is calculated
-
-    double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0);//assuming each letter has a min of 5 characters...calculating the typing speed per min hence (/60)
+    //avoiding division by zero by adding a small value
+    double typingSpeed = (totalCharacters / 5.0) / 1 + (elapsedTime / 60.0);//assuming each letter has a min of 5 characters...calculating the typing speed per min hence (/60)
     //stastical values are updated in the structure and stored
     stats->typingSpeed = typingSpeed;
     stats->accuracy = accuracy;
@@ -181,7 +181,14 @@ void processAttempts(FILE* file)
         }
 
         clock_t endTime = clock();//time stops
+        //if used in systems other than windows, the time is 0
         double elapsedTime = (double)(endTime - startTime) / CLOCKS_PER_SEC;//elapsed time is calculated per sec
+
+        if (elapsedTime <= 0) 
+        {
+            elapsedTime = (double)(1);//eliminates divion by 0 error
+            continue;
+        }
 
         size_t len = strlen(input);//length of  the inputed para is stored in this
         if (len > 0 && input[len - 1] == '\n') 
@@ -200,6 +207,8 @@ void processAttempts(FILE* file)
         printf("--------------------------------------------------------\n");
 
         attempts[numAttempts++] = currentAttempt;//last 10 attempts are stored here
+
+        free(currentPara); //memory allocated is freed
 
         if (numAttempts >= max_attempts) 
         {
