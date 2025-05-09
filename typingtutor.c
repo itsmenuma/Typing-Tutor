@@ -1,241 +1,185 @@
-//header files
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<time.h>
-#include<ctype.h>
-//global declarations
-#define max_para_length 200
-#define max_file_line_length 200
-#define max_attempts 10
-//structure to store difficulty
-typedef struct{
-	int easy;
-	int medium;
-	int hard;
-}Difficulty;
-//structure to store typing statistics
-typedef struct 
-{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <ctype.h>
+
+#define MAX_PARA_LENGTH 500
+#define MAX_LINE_LENGTH 500
+#define MAX_ATTEMPTS 10
+#define HISTORY_FILE "history.txt"
+
+typedef struct {
+    int easy;
+    int medium;
+    int hard;
+    char label[10];
+} Difficulty;
+
+typedef struct {
     double typingSpeed;
     double accuracy;
     int wrongChars;
-    char paragraph[max_para_length];
+    char paragraph[MAX_PARA_LENGTH];
+    char timestamp[30];
 } TypingStats;
-//function to generate a random paragraph
-char* getRandomParagraph(FILE* file) 
-{
-    char line[max_file_line_length];
-    int numParas = 0;
 
-    while (fgets(line, sizeof(line), file) != NULL) //while this is true read from the file till u reach new line character
-    {
-        if (line[0] != '\n') 
-        {
-            numParas++;//counts the no of paragraphs in the file
-        }
-    }
-    //case when the file is empty
-    if (numParas == 0) 
-    {
-        perror("Error: No paragraphs found in the file.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    fseek(file, 0, SEEK_SET);//this function resets the file position to the beigning of the file
-
-    int randomIndex = rand() % numParas;//a random index is generated
-
-    for (int i = 0; i < randomIndex; i++) //the paragrphs are read again from the start to the randomly generated index
-    {
-        if (fgets(line, sizeof(line), file) == NULL) //if the randomly generated index does not contain any paragraphs
-        {
-            perror("Error reading paragraph from file.\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    size_t len = strlen(line);//length of the randomly generated para is stored in this
-    if (len > 0 && line[len - 1] == '\n') //last line of the string is appended with '\0'.or new line character is removed
-    {
-        line[len - 1] = '\0';
-    }
-
-    char* paragraph = strdup(line);//The paragraph is duplicated using strdup to allocate memory dynamically.
-    if (paragraph == NULL) //if memory could not be allocated dynamically
-    {
-        perror("Memory allocation error");
-        exit(EXIT_FAILURE);
-    }
-
-    return paragraph;//return the randomly generated para
+void trimNewline(char* str) {
+    size_t len = strlen(str);
+    if (len && str[len - 1] == '\n') str[len - 1] = '\0';
 }
-//function to calculate the typing statistics
-void printTypingStats(double elapsedTime, const char* input, const char* correctText, Difficulty difficulty, TypingStats* stats) 
-{
-    int correctCount = 0, wrongCount = 0;//initially no of wrong and right counts are initilized to 0
-    int minLen = strlen(correctText) < strlen(input) ? strlen(correctText) : strlen(input);//this finds the minimum length of the input and correct striing
-    //checking and updating correct and wrong counts
-    for (int i = 0; i < minLen; i++) 
-    {
-        if (correctText[i] == input[i]) 
-        {
-            correctCount++;
-        } 
-        else 
-        {
-            wrongCount++;
+
+char* getRandomParagraph(FILE* file) {
+    char line[MAX_LINE_LENGTH];
+    char* paragraphs[100];
+    int count = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        trimNewline(line);
+        if (strlen(line) > 0) {
+            paragraphs[count] = strdup(line);
+            count++;
         }
     }
 
-    int totalCharacters = minLen;//total no of chacaters is stored in this variavble
-    double accuracy = (double)correctCount / totalCharacters * 100;//accuracy is calculated
+    if (count == 0) {
+        fprintf(stderr, "No paragraphs found.\n");
+        exit(EXIT_FAILURE);
+    }
 
-    double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0);//assuming each letter has a min of 5 characters...calculating the typing speed per min hence (/60)
-    //stastical values are updated in the structure and stored
+    int idx = rand() % count;
+    char* selected = strdup(paragraphs[idx]);
+
+    for (int i = 0; i < count; i++) free(paragraphs[i]);
+    return selected;
+}
+
+void printTypingStats(double elapsedTime, const char* input, const char* correctText, TypingStats* stats) {
+    int correctCount = 0, wrongCount = 0;
+    int minLen = strlen(correctText) < strlen(input) ? strlen(correctText) : strlen(input);
+
+    for (int i = 0; i < minLen; i++) {
+        if (correctText[i] == input[i]) correctCount++;
+        else wrongCount++;
+    }
+
+    int totalCharacters = minLen;
+    double accuracy = (double)correctCount / totalCharacters * 100;
+    double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0);
+
     stats->typingSpeed = typingSpeed;
     stats->accuracy = accuracy;
     stats->wrongChars = wrongCount;
-    strncpy(stats->paragraph, correctText, max_para_length);
-}
-//display function for previous attempts
-void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
-{
-    printf("\nPrevious Attempts:\n");
-    printf("--------------------------------------------------------\n");
-    printf("| Attempt | Typing Speed (cpm) | Accuracy | Wrong Chars |\n");
-    printf("--------------------------------------------------------\n");
+    strncpy(stats->paragraph, correctText, MAX_PARA_LENGTH);
 
-    for (int i = 0; i < numAttempts; i++) {
-        printf("|   %2d    |        %.2f         |  %.2f   |     %2d      |\n",i + 1, attempts[i].typingSpeed, attempts[i].accuracy, attempts[i].wrongChars);
+    time_t now = time(NULL);
+    strftime(stats->timestamp, sizeof(stats->timestamp), "%Y-%m-%d %H:%M:%S", localtime(&now));
+}
+
+void saveAttemptToFile(const TypingStats* stat) {
+    FILE* file = fopen(HISTORY_FILE, "a");
+    if (!file) {
+        perror("Unable to save history");
+        return;
     }
 
-    printf("--------------------------------------------------------\n");
+    fprintf(file, "%s | Speed: %.2f CPM | Accuracy: %.2f%% | Wrong: %d\n",
+            stat->timestamp, stat->typingSpeed, stat->accuracy, stat->wrongChars);
+    fclose(file);
 }
-//function to prompt difficulty
-void promptDifficulty(Difficulty *difficulty) 
-{
+
+void showHistory() {
+    FILE* file = fopen(HISTORY_FILE, "r");
+    if (!file) {
+        printf("No previous history found.\n");
+        return;
+    }
+
+    printf("\n--- Previous Attempts History ---\n");
+    char line[300];
+    while (fgets(line, sizeof(line), file)) {
+        printf("%s", line);
+    }
+    fclose(file);
+    printf("---------------------------------\n");
+}
+
+void promptDifficulty(Difficulty* difficulty) {
     int choice;
-//ask the user for choice
     printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
 
-    while (1) 
-    {
+    while (1) {
         printf("Enter your choice: ");
-        if (scanf("%d", &choice) != 1) //if a character is entered instead of no
-        {
-            perror("Invalid input. Please enter a number.\n");
+        if (scanf("%d", &choice) != 1) {
+            printf("Invalid input. Try again.\n");
             while (getchar() != '\n');
             continue;
         }
-
         while (getchar() != '\n');
-
-        if (choice >= 1 && choice <= 3) //if th e choice is btween this range come out of the function
-        {
-            break;
-        } 
-        else 
-        {
-            perror("Invalid choice. Please enter a number between 1 and 3.\n");
-        }
+        if (choice >= 1 && choice <= 3) break;
+        printf("Please enter 1, 2, or 3.\n");
     }
 
     switch (choice) {
-        case 1: *difficulty = (Difficulty){5, 8, 12}; break;//based on the choice difficulty level is decided
-        case 2: *difficulty = (Difficulty){8, 12, 16}; break;//These values represent the speed requirements for each difficulty level.
-        case 3: *difficulty = (Difficulty){12, 16, 20}; break;
-        default: printf("Invalid choice. Using default difficulty level (Easy).\n");//default is easy
-                 *difficulty = (Difficulty){5, 8, 12};
+        case 1: *difficulty = (Difficulty){5, 8, 12, "Easy"}; break;
+        case 2: *difficulty = (Difficulty){8, 12, 16, "Medium"}; break;
+        case 3: *difficulty = (Difficulty){12, 16, 20, "Hard"}; break;
     }
 }
-//fucntion to store process attempts
-void processAttempts(FILE* file) 
-{
 
-    srand((unsigned int)time(NULL));//seed value is set to unsigned int time
-
-    printf("Welcome to Typing Tutor!\n");//welcome message
-    //local variable declarations
-    char input[max_para_length];
+void processAttempts(FILE* file) {
+    srand((unsigned int)time(NULL));
+    char input[MAX_PARA_LENGTH];
     Difficulty difficulty;
-    TypingStats attempts[max_attempts];
-    int numAttempts = 0;//initially no of attempts is set to 0
+    TypingStats attempt;
 
-    promptDifficulty(&difficulty);//this function lets the user chose the difficulty level
+    promptDifficulty(&difficulty);
 
-    while (1) 
-    {
-        char* currentPara = getRandomParagraph(file);//a random para is stored in current para variable
+    while (1) {
+        char* paragraph = getRandomParagraph(file);
+        printf("\nType the following paragraph:\n%s\n", paragraph);
 
-        printf("\nType the following paragraph:\n%s\n", currentPara);//the random para is displayed
-
-        clock_t startTime= clock();//time is started
-        printf("Your input: \n");
-        fflush(stdout);//fflush() is typically used for output stream only. Its purpose is to clear the output buffer and move the buffered data to console 
-
-        if (fgets(input, sizeof(input), stdin) == NULL) //error readiing the input
-        {
-            perror("Error reading input");//The C library function void perror(const char *str) prints a descriptive error message to stderr. 
+        printf("Your input:\n");
+        clock_t start = clock();
+        if (!fgets(input, sizeof(input), stdin)) {
+            perror("Error reading input");
             exit(EXIT_FAILURE);
         }
+        clock_t end = clock();
 
-        clock_t endTime = clock();//time stops
-        double elapsedTime = (double)(endTime - startTime) / CLOCKS_PER_SEC;//elapsed time is calculated per sec
+        double timeTaken = (double)(end - start) / CLOCKS_PER_SEC;
+        trimNewline(input);
 
-        size_t len = strlen(input);//length of  the inputed para is stored in this
-        if (len > 0 && input[len - 1] == '\n') 
-        {
-            input[len - 1] = '\0';//string is appended with '\0' and new line character is removed
-        }
+        printTypingStats(timeTaken, input, paragraph, &attempt);
 
-        TypingStats currentAttempt;
-        printTypingStats(elapsedTime, input, currentPara, difficulty, &currentAttempt);//function to calculate typing stats is called
+        printf("\n--- Typing Statistics ---\n");
+        printf("Time: %s\n", attempt.timestamp);
+        printf("Speed: %.2f CPM\n", attempt.typingSpeed);
+        printf("Accuracy: %.2f%%\n", attempt.accuracy);
+        printf("Wrong Characters: %d\n", attempt.wrongChars);
+        printf("--------------------------\n");
 
-        printf("\nTyping Stats for Current Attempt:\n");
-        printf("--------------------------------------------------------\n");
-        printf("Typing Speed: %.2f characters per minute\n", currentAttempt.typingSpeed);
-        printf("Accuracy: %.2f%%\n", currentAttempt.accuracy);
-        printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
-        printf("--------------------------------------------------------\n");
+        saveAttemptToFile(&attempt);
 
-        attempts[numAttempts++] = currentAttempt;//last 10 attempts are stored here
+        free(paragraph);
 
-        if (numAttempts >= max_attempts) 
-        {
-            displayPreviousAttempts(attempts, numAttempts);
-            printf("\nMaximum attempts reached. Exiting...\n");
-            break;
-        }
-
-        printf("\nDo you want to continue? (y/n): ");//asks the user if we wants to continue
-        char choice[3];
-        if (fgets(choice, sizeof(choice), stdin) == NULL) 
-        {
-            perror("Error reading choice");
-            exit(EXIT_FAILURE);
-        }
-
-        if (tolower(choice[0]) != 'y') //If the arguments passed to the tolower() function is other than an uppercase alphabet, it returns the same character that is passed to the function.
-        {
-            displayPreviousAttempts(attempts, numAttempts);
-            printf("\nThanks for using Typing Tutor!\n");
-            break;
-        }
+        printf("\nDo you want to continue? (y/n): ");
+        char choice[5];
+        if (!fgets(choice, sizeof(choice), stdin)) break;
+        if (tolower(choice[0]) != 'y') break;
     }
 
-    fclose(file);//file is closed
+    fclose(file);
+    showHistory();
 }
-//main function
+
 int main() {
-    FILE* file = fopen("paragraphs.txt", "r");//the name of the file is stored in this file variable 
-    if (file == NULL) 
-    {
-        perror("Error opening file 'paragraphs.txt'");
+    FILE* file = fopen("paragraphs.txt", "r");
+    if (!file) {
+        perror("Cannot open 'paragraphs.txt'");
         return 1;
     }
 
     processAttempts(file);
-
     return 0;
 }
