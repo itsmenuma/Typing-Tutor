@@ -195,6 +195,22 @@ void processAttempts(FILE *file)
         clock_t endTime = clock();                                           // time stops
         double elapsedTime = (double)(endTime - startTime) / CLOCKS_PER_SEC; // elapsed time is calculated per sec
 
+        // Prevent unrealistically short elapsed time
+        if (elapsedTime < 1.0) {
+            printf("\n⚠️  Typing too fast or pasted input detected. Please type the paragraph manually.\n");
+            printf("This attempt will not be recorded.\n");
+            free(currentPara);
+            continue;
+        }
+
+        // Check if input is empty
+        if (strlen(input) == 0) {
+            printf("\n⚠️  No input detected. Please type something.\n");
+            free(currentPara);
+            continue;
+        }
+
+
         size_t len = strlen(input); // length of  the inputed para is stored in this
         if (len > 0 && input[len - 1] == '\n')
         {
@@ -212,7 +228,7 @@ void processAttempts(FILE *file)
         printf("--------------------------------------------------------\n");
 
         // Evaluate performance based on difficulty
-        if (currentAttempt.typingSpeed >= difficulty.hard) {
+        if (currentAttempt.typingSpeed >=    difficulty.hard) {
             printf("Performance Level: 🟢 Excellent (Hard)\n");
         } else if (currentAttempt.typingSpeed >= difficulty.medium) {
             printf("Performance Level: 🟡 Good (Medium)\n");
