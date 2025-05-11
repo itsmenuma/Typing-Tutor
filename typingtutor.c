@@ -211,6 +211,18 @@ void processAttempts(FILE *file)
         printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
         printf("--------------------------------------------------------\n");
 
+        // Evaluate performance based on difficulty
+        if (currentAttempt.typingSpeed >= difficulty.hard) {
+            printf("Performance Level: 🟢 Excellent (Hard)\n");
+        } else if (currentAttempt.typingSpeed >= difficulty.medium) {
+            printf("Performance Level: 🟡 Good (Medium)\n");
+        } else if (currentAttempt.typingSpeed >= difficulty.easy) {
+            printf("Performance Level: 🟠 Basic (Easy)\n");
+        } else {
+            printf("Performance Level: 🔴 Below Easy - Keep practicing!\n");
+    }
+
+
         attempts[numAttempts++] = currentAttempt; // last 10 attempts are stored here
 
         if (numAttempts >= max_attempts)
