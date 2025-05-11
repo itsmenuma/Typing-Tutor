@@ -1,4 +1,3 @@
-//header files
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -115,40 +114,112 @@ void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
 //function to prompt difficulty
 void promptDifficulty(Difficulty *difficulty) 
 {
-    int choice;
-//ask the user for choice
-    printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
+    srand((unsigned int)time(NULL));  // Seed for random number generation
 
+    // Display message asking for selection mode
+    printf("How would you like to select the difficulty?\n");
+    printf("1. Random Selection\n");
+    printf("2. Systematic Selection (Manually Choose)\n");
+    
+    int choice;
     while (1) 
     {
-        printf("Enter your choice: ");
-        if (scanf("%d", &choice) != 1) //if a character is entered instead of no
+        printf("Enter your choice (1 or 2): ");
+        if (scanf("%d", &choice) != 1) 
         {
             perror("Invalid input. Please enter a number.\n");
             while (getchar() != '\n');
             continue;
         }
+        while (getchar() != '\n');  // Clear the buffer
 
-        while (getchar() != '\n');
-
-        if (choice >= 1 && choice <= 3) //if th e choice is btween this range come out of the function
+        if (choice == 1 || choice == 2) // Proceed if choice is valid
         {
             break;
         } 
         else 
         {
-            perror("Invalid choice. Please enter a number between 1 and 3.\n");
+            printf("Invalid choice. Please enter 1 or 2.\n");
         }
     }
 
-    switch (choice) {
-        case 1: *difficulty = (Difficulty){5, 8, 12}; break;//based on the choice difficulty level is decided
-        case 2: *difficulty = (Difficulty){8, 12, 16}; break;//These values represent the speed requirements for each difficulty level.
-        case 3: *difficulty = (Difficulty){12, 16, 20}; break;
-        default: printf("Invalid choice. Using default difficulty level (Easy).\n");//default is easy
-                 *difficulty = (Difficulty){5, 8, 12};
+    if (choice == 1) // Random Selection
+    {
+        // Array of random prompts
+        const char* messages[] = {
+            "Choose your path! It's time to decide the difficulty.",
+            "Ready for a challenge? Select your difficulty.",
+            "How fast can you type? Let's pick the difficulty!"
+        };
+
+        int msgIndex = rand() % 3; // Random index for message
+        printf("%s\n", messages[msgIndex]);
+
+        // Randomly choose a difficulty
+        int randomChoice = rand() % 3 + 1;  // Random number between 1 and 3
+        switch (randomChoice) {
+            case 1:
+                printf("You've been assigned 'Easy'. Relax and enjoy your typing.\n");
+                *difficulty = (Difficulty){5, 8, 12};
+                break;
+            case 2:
+                printf("You've been assigned 'Medium'. Time to test your skills!\n");
+                *difficulty = (Difficulty){8, 12, 16};
+                break;
+            case 3:
+                printf("You've been assigned 'Hard'. Brace yourself for a challenge!\n");
+                *difficulty = (Difficulty){12, 16, 20};
+                break;
+            default:
+                *difficulty = (Difficulty){5, 8, 12}; // Default case
+        }
+    }
+    else if (choice == 2) // Systematic Selection
+    {
+        // Display available difficulty levels
+        printf("Select difficulty level:\n");
+        printf("1. Easy\n2. Medium\n3. Hard\n");
+
+        int systematicChoice;
+        while (1) 
+        {
+            printf("Enter your choice (1, 2, or 3): ");
+            if (scanf("%d", &systematicChoice) != 1) 
+            {
+                perror("Invalid input. Please enter a number.\n");
+                while (getchar() != '\n');
+                continue;
+            }
+            while (getchar() != '\n'); // Clear the buffer
+
+            if (systematicChoice >= 1 && systematicChoice <= 3) 
+            {
+                break;
+            }
+            else 
+            {
+                printf("Invalid choice. Please enter a valid difficulty number (1-3).\n");
+            }
+        }
+
+        // Assign the difficulty based on user input
+        switch (systematicChoice) {
+            case 1:
+                *difficulty = (Difficulty){5, 8, 12};
+                printf("You have selected 'Easy'. Good luck!\n");
+                break;
+            case 2:
+                *difficulty = (Difficulty){8, 12, 16};
+                printf("You have selected 'Medium'. Let's go!\n");
+                break;
+            case 3:
+                *difficulty = (Difficulty){12, 16, 20};
+                printf("You have selected 'Hard'. Get ready!\n");
+                break;
+        }
     }
 }
+
 //fucntion to store process attempts
 void processAttempts(FILE* file) 
 {
