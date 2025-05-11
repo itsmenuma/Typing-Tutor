@@ -43,9 +43,9 @@ char *getRandomParagraph(FILE *file)
         exit(EXIT_FAILURE);
     }
 
-    fseek(file, 0, SEEK_SET); // this function resets the file position to the beigning of the file
+    fseek(file, 0, SEEK_SET); // This function resets the file position to the beigning of the file
 
-    int randomIndex = rand() % numParas; // a random index is generated
+    int randomIndex = rand() % numParas; // A random index is generated
 
     for (int i = 0; i < randomIndex; i++) // the paragrphs are read again from the start to the randomly generated index
     {
@@ -63,7 +63,7 @@ char *getRandomParagraph(FILE *file)
     }
 
     char *paragraph = strdup(line); // The paragraph is duplicated using strdup to allocate memory dynamically.
-    if (paragraph == NULL)          // if memory could not be allocated dynamically
+    if (paragraph == NULL)          // If memory could not be allocated dynamically
     {
         perror("Memory allocation error");
         exit(EXIT_FAILURE);
