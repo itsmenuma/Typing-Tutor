@@ -92,6 +92,15 @@ void printTypingStats(double elapsedTime, const char *input, const char *correct
     int totalCharacters = minLen;                                   // total no of chacaters is stored in this variavble
     double accuracy = (double)correctCount / totalCharacters * 100; // accuracy is calculated
 
+    //added division by zero
+    if (elapsedTime < 1)
+    {   
+        printf("\n");
+        printf("### Please DO NOT paste text or press enter immediately ###\n");
+        printf("\n");
+        elapsedTime = 1;
+    }
+    
     double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0); // assuming each letter has a min of 5 characters...calculating the typing speed per min hence (/60)
     // stastical values are updated in the structure and stored
     stats->typingSpeed = typingSpeed;
