@@ -94,7 +94,8 @@ void printTypingStats(double elapsedTime, const char *input, const char *correct
 
     //added division by zero
     if (elaspsedTime < 1)
-    {
+    {   
+        printf("please DO NOT paste text or press enter immediatialy");
         elapsedTime = 1;
     }
     
