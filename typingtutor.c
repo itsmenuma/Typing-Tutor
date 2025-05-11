@@ -93,9 +93,11 @@ void printTypingStats(double elapsedTime, const char *input, const char *correct
     double accuracy = (double)correctCount / totalCharacters * 100; // accuracy is calculated
 
     //added division by zero
-    if (elaspsedTime < 1)
+    if (elapsedTime < 1)
     {   
-        printf("please DO NOT paste text or press enter immediatialy");
+        printf("\n");
+        printf("### Please DO NOT paste text or press enter immediately ###\n");
+        printf("\n");
         elapsedTime = 1;
     }
     
