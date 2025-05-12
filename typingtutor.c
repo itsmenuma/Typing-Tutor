@@ -89,7 +89,8 @@ void printTypingStats(double elapsedTime, const char *input, const char *correct
         }
     }
 
-    int totalCharacters = minLen;                                   // total no of chacaters is stored in this variavble
+    wrongCount += abs(strlen(correctText) - strlen(input));
+    int totalCharacters = strlen(correctText);                                   // total no of chacaters is stored in this variavble
     double accuracy = (double)correctCount / totalCharacters * 100; // accuracy is calculated
 
     double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0); // assuming each letter has a min of 5 characters...calculating the typing speed per min hence (/60)
