@@ -206,7 +206,7 @@ void processAttempts(FILE *file)
 
         printf("\nTyping Stats for Current Attempt:\n");
         printf("--------------------------------------------------------\n");
-        printf("Typing Speed: %.2f characters per minute\n", currentAttempt.typingSpeed);
+        printf("Typing Speed: %.2f words per minute\n", currentAttempt.typingSpeed);
         printf("Accuracy: %.2f%%\n", currentAttempt.accuracy);
         printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
         printf("--------------------------------------------------------\n");
