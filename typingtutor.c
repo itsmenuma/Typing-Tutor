@@ -189,7 +189,8 @@ void printTypingStats(double elapsedTime, const char *input, const char *correct
         }
     }
 
-    int totalCharacters = minLen;                                   // total no of chacaters is stored in this variavble
+    wrongCount += abs(strlen(correctText) - strlen(input));
+    int totalCharacters = strlen(correctText);                   // total no of chacaters is stored in this variavble
     double accuracy = (double)correctCount / totalCharacters * 100; // accuracy is calculated
 
     //added division by zero
