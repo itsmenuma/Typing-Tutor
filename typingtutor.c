@@ -45,6 +45,7 @@ typedef struct
     double accuracy;
     int wrongChars;
     char paragraph[max_para_length];
+    int caseInsensitive;
 } TypingStats;
 
 // function to create user profile
@@ -169,7 +170,16 @@ void printTypingStats(double elapsedTime, const char *input, const char *correct
     // checking and updating correct and wrong counts
     for (int i = 0; i < minLen; i++)
     {
-        if (correctText[i] == input[i])
+        char c1=correctText[i];
+        char c2=input[i];
+
+        if(stats->caseInsensitive)
+        {
+            c1=tolower(c1);
+            c2=tolower(c2);
+        }
+
+        if (c1 == c2)
         {
             correctCount++;
         }
@@ -278,7 +288,8 @@ void processAttempts(FILE* file)
     char input[max_para_length];
     Difficulty difficulty;
     TypingStats attempts[max_attempts];
-    int numAttempts = 0; //initially no of attempts is set to 0
+    int numAttempts = 0; // initially no of attempts is set to 0
+    int caseChoice;
 
     promptDifficulty(&difficulty); //this function lets the user choose the difficulty level
 
@@ -287,6 +298,10 @@ void processAttempts(FILE* file)
     {
 
         char *currentPara = getRandomParagraph(file); // a random para is stored in current para variable
+
+        printf("Enable case-insensitive typing ? (1- YES, 0-NO) ");
+        scanf("%d",&caseChoice);
+        while (getchar() != '\n'); // Clear buffer
 
         printf("\nType the following paragraph:\n%s\n", currentPara); // the random para is displayed
 
@@ -330,9 +345,8 @@ void processAttempts(FILE* file)
 
        
         TypingStats currentAttempt;
-
-        printTypingStats(elapsedTime, input, currentPara, difficulty, &currentAttempt); //function to calculate typing stats is called
-
+        currentAttempt.caseInsensitive=caseChoice;
+        printTypingStats(elapsedTime, input, currentPara, difficulty, &currentAttempt); // function to calculate typing stats is called
 
         printf("\nTyping Stats for Current Attempt:\n");
         printf("--------------------------------------------------------\n");
