@@ -1,69 +1,87 @@
-# Typing-Tutor
-<br>
-Typing Tutor is a console-based application that helps users improve their typing speed and accuracy. The program selects random paragraphs from a text file, and users are required to type them as quickly and accurately as possible. It provides feedback on typing speed (characters per minute) and accuracy and keeps track of previous attempts.
-<br>
-<br>
-Features
-<br>
-Random Paragraph Selection: The program randomly selects a paragraph from a file for each typing session.
-<br>
-Typing Speed and Accuracy: It calculates and displays the typing speed (in characters per minute) and accuracy percentage.
-<br>
-Difficulty Levels: Users can select from three difficulty levels: Easy, Medium, and Hard.
-<br>
-Tracking Attempts: The program keeps track of up to 10 typing attempts and displays the statistics for each.
-<br>
-<br>
-Getting Started
-<br>
-Prerequisites
-<br>
-To run this program, you need:
-<br>
-A C compiler (such as GCC)
-<br>
-A text file named paragraphs.txt containing paragraphs for typing practice
-<br>
-<br>
-Usage
-<br>
-1. Select Difficulty Level:
-<br>
-The program prompts you to choose a difficulty level (Easy, Medium, Hard). This affects the speed and accuracy calculations.
-<br>
-2. Type the Paragraph:
-<br>
-A random paragraph will be displayed, and you need to type it as accurately and quickly as possible.
-<br>
-3. View Typing Stats:
-<br>
-After typing, the program displays your typing speed, accuracy, and the number of wrong characters.
-<br>
-4. Continue or Exit:
-<br>
-You can choose to continue typing or exit the program. The program tracks up to 10 attempts and displays them at the end.
-<br>
-<br>
-Files
-<br>
-typing_tutor.c: The main source code file for the Typing Tutor program.
-<br>
-paragraphs.txt: A text file containing paragraphs for typing practice.
-<br>
-<br>
-Contributing
-<br>
-Feel free to fork this repository and submit pull requests for any improvements or additional features. If you encounter any issues, please open an issue in the repository.
-<br>
-<br>
-License
-<br>
-This project is licensed under the MIT License - see the LICENSE file for details.
-<br>
-<br>
-Acknowledgments
-<br>
-The concept of this program is inspired by various typing tutor applications that help improve typing speed and accuracy.
-<br>
-<br>
-Feel free to contact numarahamath@gmail.com
+# 🧠 Typing-Tutor ⌨️
+
+> *Boost your typing speed and accuracy — one paragraph at a time!*
+
+Typing Tutor is a **console-based C application** designed to help users improve their **typing speed**, **accuracy**, and **confidence**. It selects **random paragraphs** from a file and gives real-time feedback on performance.
+
+---
+
+## ✨ Features
+
+* 📄 **Random Paragraph Selection**
+  Each typing session presents a new, randomly chosen paragraph from a text file.
+
+* ⚡ **Typing Speed & Accuracy Analysis**
+  Measures your typing speed in **Characters Per Minute (CPM)** and calculates **accuracy** as a percentage.
+
+* 🎯 **Difficulty Levels**
+  Choose from **Easy**, **Medium**, or **Hard** to match your skill level.
+
+* 📊 **Track Performance**
+  Stores up to **10 previous attempts** with full stats for each session.
+
+---
+
+## 🚀 Getting Started
+
+### ✅ Prerequisites
+
+* A **C compiler** (e.g., `gcc`)
+* A text file named **`paragraphs.txt`** containing paragraphs for typing practice
+
+### 🛠️ How to Use
+
+1. **Choose a Difficulty Level**
+   Select from Easy 🟢, Medium 🟡, or Hard 🔴 when prompted.
+
+2. **Start Typing**
+   A random paragraph will be displayed. Type it **as fast and accurately as possible**.
+
+3. **Get Your Stats**
+   Once done, you'll see your:
+
+   * 🕒 Typing speed (CPM)
+   * 🌟 Accuracy (%)
+   * ❌ Number of wrong characters
+
+4. **Continue or Exit**
+   You can try again with a new paragraph (up to 10 attempts) or exit the program.
+
+---
+
+## 📁 Files
+
+* `typing_tutor.c` – Main source code
+* `paragraphs.txt` – Text file containing paragraphs for practice
+
+---
+
+## 🤝 Contributing
+
+We ❤️ contributions!
+
+* Fork the repository
+* Create a new branch: `git checkout -b feature-name`
+* Commit your changes
+* Push to your branch: `git push origin feature-name`
+* Open a **pull request**
+
+If you find a bug or have a feature suggestion, please [open an issue](https://github.com/itsmenuma/Typing-Tutor/issues) with details!
+
+---
+
+## 📜 License
+
+Licensed under the [MIT License](LICENSE) 🗑️
+
+---
+
+## 🙌 Acknowledgments
+
+Inspired by traditional typing tutor tools used in schools and online platforms to help improve typing skills.
+
+---
+
+## 📬 Contact
+
+Got a question or feedback? Reach out at: **[numarahamath@gmail.com](mailto:numarahamath@gmail.com)**
