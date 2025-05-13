@@ -1,13 +1,24 @@
-// header files
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
-// global declarations
+
+//header files
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<time.h>
+#include<ctype.h>
+
+//global declarations
 #define max_para_length 200
 #define max_file_line_length 200
 #define max_attempts 10
+
+// Define named constants for difficulty levels
+#define EASY_SPEED 5
+#define MEDIUM_SPEED 8
+#define HARD_SPEED 12
+#define EASY_MEDIUM_SPEED 8
+#define MEDIUM_HARD_SPEED 12
+#define HARD_MAX_SPEED 16
+
 
 //structure to store user profile
 typedef struct {
@@ -19,15 +30,15 @@ typedef struct {
     int totalAttempts;
 } UserProfile;
 
-// structure to store difficulty
-typedef struct
-{
+//structure to store difficulty
+typedef struct{
     int easy;
     int medium;
     int hard;
-} Difficulty;
-// structure to store typing statistics
-typedef struct
+}Difficulty;
+
+//structure to store typing statistics
+typedef struct 
 
 {
     double typingSpeed;
@@ -99,6 +110,7 @@ void displayUserSummary(UserProfile* profile) {
     printf("Total Attempts: %d\n", profile->totalAttempts);
     printf("--------------------------------------------------------\n");
 }
+
 
 //function to generate a random paragraph
 char* getRandomParagraph(FILE* file) 
@@ -196,13 +208,16 @@ void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
 void promptDifficulty(Difficulty *difficulty)
 {
     int choice;
-    // ask the user for choice
+    //ask the user for choice
+
     printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
 
     while (1)
     {
         printf("Enter your choice: ");
-        if (scanf("%d", &choice) != 1) // if a character is entered instead of no
+
+        if (scanf("%d", &choice) != 1) //if a character is entered instead of a number
+
         {
             perror("Invalid input. Please enter a number.\n");
             while (getchar() != '\n')
@@ -213,7 +228,9 @@ void promptDifficulty(Difficulty *difficulty)
         while (getchar() != '\n')
             ;
 
-        if (choice >= 1 && choice <= 3) // if th e choice is btween this range come out of the function
+
+        if (choice >= 1 && choice <= 3) //if the choice is within this range, break out of the loop
+
         {
             break;
         }
@@ -223,26 +240,24 @@ void promptDifficulty(Difficulty *difficulty)
         }
     }
 
-    switch (choice)
-    {
-    case 1:
-        *difficulty = (Difficulty){5, 8, 12};
-        break; // based on the choice difficulty level is decided
-    case 2:
-        *difficulty = (Difficulty){8, 12, 16};
-        break; // These values represent the speed requirements for each difficulty level.
-    case 3:
-        *difficulty = (Difficulty){12, 16, 20};
-        break;
-    default:
-        printf("Invalid choice. Using default difficulty level (Easy).\n"); // default is easy
-        *difficulty = (Difficulty){5, 8, 12};
+    switch (choice) {
+        case 1: 
+            *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED}; 
+            break;
+        case 2: 
+            *difficulty = (Difficulty){EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED, HARD_MAX_SPEED}; 
+            break;
+        case 3: 
+            *difficulty = (Difficulty){MEDIUM_HARD_SPEED, HARD_MAX_SPEED, HARD_SPEED + 4}; 
+            break;
+        default: 
+            printf("Invalid choice. Using default difficulty level (Easy).\n");
+            *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
     }
 }
-// fucntion to store process attempts
-void processAttempts(FILE *file)
+//function to process attempts
+void processAttempts(FILE* file) 
 {
-
     srand((unsigned int)time(NULL));//seed value is set to unsigned int time
     
     printf("Welcome to Typing Tutor!\n");//welcome message
@@ -250,15 +265,18 @@ void processAttempts(FILE *file)
     loadUserProfile(&profile); //  Load user profile from file
     //local variable declarations
 
+
     char input[max_para_length];
     Difficulty difficulty;
     TypingStats attempts[max_attempts];
-    int numAttempts = 0; // initially no of attempts is set to 0
+    int numAttempts = 0; //initially no of attempts is set to 0
 
-    promptDifficulty(&difficulty); // this function lets the user chose the difficulty level
+    promptDifficulty(&difficulty); //this function lets the user choose the difficulty level
+
 
     while (1)
     {
+
         char *currentPara = getRandomParagraph(file); // a random para is stored in current para variable
 
         printf("\nType the following paragraph:\n%s\n", currentPara); // the random para is displayed
@@ -280,10 +298,32 @@ void processAttempts(FILE *file)
         if (len > 0 && input[len - 1] == '\n')
         {
             input[len - 1] = '\0'; // string is appended with '\0' and new line character is removed
+
         }
 
+        // Check if input is empty or contains only whitespace
+        int isWhitespaceOnly = 1;
+        for (size_t i = 0; i < strlen(input); i++) 
+        {
+            if (!isspace((unsigned char)input[i])) 
+            {
+                isWhitespaceOnly = 0;
+                break;
+            }
+        }
+
+        if (strlen(input) == 0 || isWhitespaceOnly) 
+        {
+            printf("Input cannot be empty or contain only whitespace. Please try again.\n");
+            free(currentPara);
+            continue;
+        }
+
+       
         TypingStats currentAttempt;
-        printTypingStats(elapsedTime, input, currentPara, difficulty, &currentAttempt); // function to calculate typing stats is called
+
+        printTypingStats(elapsedTime, input, currentPara, difficulty, &currentAttempt); //function to calculate typing stats is called
+
 
         printf("\nTyping Stats for Current Attempt:\n");
         printf("--------------------------------------------------------\n");
@@ -292,9 +332,9 @@ void processAttempts(FILE *file)
         printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
         printf("--------------------------------------------------------\n");
 
-
         attempts[numAttempts++] = currentAttempt;//last 10 attempts are stored here
         updateUserProfile(&profile, &currentAttempt); //  Update profile after each attempt
+
 
 
         if (numAttempts >= max_attempts)
@@ -304,7 +344,8 @@ void processAttempts(FILE *file)
             break;
         }
 
-        printf("\nDo you want to continue? (y/n): "); // asks the user if we wants to continue
+        printf("\nDo you want to continue? (y/n): "); //asks the user if they want to continue
+
         char choice[3];
         if (fgets(choice, sizeof(choice), stdin) == NULL)
         {
@@ -312,24 +353,33 @@ void processAttempts(FILE *file)
             exit(EXIT_FAILURE);
         }
 
+
         if (tolower(choice[0]) != 'y') // If the arguments passed to the tolower() function is other than an uppercase alphabet, it returns the same character that is passed to the function.
+
         {
             displayPreviousAttempts(attempts, numAttempts);
             displayUserSummary(&profile); //  Display summary at the end
             printf("\nThanks for using Typing Tutor!\n");
             break;
         }
+
+        free(currentPara); //free the allocated memory for the paragraph
     }
+
 
      
     fclose(file);//file is closed
 
 }
-// main function
-int main()
-{
-    FILE *file = fopen("paragraphs.txt", "r"); // the name of the file is stored in this file variable
-    if (file == NULL)
+//main function
+int main() {
+
+    // Seed randomness once at the start of the program
+    srand((unsigned int)time(NULL)); 
+    //open the file in read mode
+    FILE* file = fopen("paragraphs.txt", "r");//the name of the file is stored in this file variable 
+    if (file == NULL) 
+
     {
         perror("Error opening file 'paragraphs.txt'");
         return 1;
