@@ -19,6 +19,17 @@
 #define MEDIUM_HARD_SPEED 12
 #define HARD_MAX_SPEED 16
 
+
+//structure to store user profile
+typedef struct {
+    char username[50];
+    double bestSpeed;
+    double bestAccuracy;
+    double totalSpeed;
+    double totalAccuracy;
+    int totalAttempts;
+} UserProfile;
+
 //structure to store difficulty
 typedef struct{
     int easy;
@@ -35,6 +46,71 @@ typedef struct
     int wrongChars;
     char paragraph[max_para_length];
 } TypingStats;
+
+// function to create user profile
+void loadUserProfile(UserProfile* profile) {
+    printf("Enter your username: ");
+    fgets(profile->username, sizeof(profile->username), stdin);
+    size_t len = strlen(profile->username);
+    if (len > 0 && profile->username[len - 1] == '\n') {
+        profile->username[len - 1] = '\0';
+    }
+
+    char filename[100];
+    snprintf(filename, sizeof(filename), "%s_profile.txt", profile->username);
+    FILE* f = fopen(filename, "r");
+
+    if (f != NULL) {
+        fscanf(f, "%lf %lf %lf %lf %d", &profile->bestSpeed, &profile->bestAccuracy,
+               &profile->totalSpeed, &profile->totalAccuracy, &profile->totalAttempts);
+        fclose(f);
+    } else {
+        profile->bestSpeed = 0;
+        profile->bestAccuracy = 0;
+        profile->totalSpeed = 0;
+        profile->totalAccuracy = 0;
+        profile->totalAttempts = 0;
+    }
+}
+// function to  Update and Save user  Profile After Each Attempt
+void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
+    if (currentAttempt->typingSpeed > profile->bestSpeed) {
+        profile->bestSpeed = currentAttempt->typingSpeed;
+    }
+    if (currentAttempt->accuracy > profile->bestAccuracy) {
+        profile->bestAccuracy = currentAttempt->accuracy;
+    }
+
+    profile->totalSpeed += currentAttempt->typingSpeed;
+    profile->totalAccuracy += currentAttempt->accuracy;
+    profile->totalAttempts++;
+
+    char filename[100];
+    snprintf(filename, sizeof(filename), "%s_profile.txt", profile->username);
+    FILE* f = fopen(filename, "w");
+
+    if (f != NULL) {
+        fprintf(f, "%.2lf %.2lf %.2lf %.2lf %d", profile->bestSpeed, profile->bestAccuracy,
+                profile->totalSpeed, profile->totalAccuracy, profile->totalAttempts);
+        fclose(f);
+    } else {
+         fprintf(stderr, "Error saving user profile to '%s'\n", filename);
+    }
+}
+// function to display user summary
+void displayUserSummary(UserProfile* profile) {
+    printf("\nUser Summary for %s:\n", profile->username);
+    printf("--------------------------------------------------------\n");
+    printf("Best Typing Speed: %.2f cpm\n", profile->bestSpeed);
+    printf("Best Accuracy: %.2f%%\n", profile->bestAccuracy);
+    if (profile->totalAttempts > 0) {
+        printf("Average Typing Speed: %.2f cpm\n", profile->totalSpeed / profile->totalAttempts);
+        printf("Average Accuracy: %.2f%%\n", profile->totalAccuracy / profile->totalAttempts);
+    }
+    printf("Total Attempts: %d\n", profile->totalAttempts);
+    printf("--------------------------------------------------------\n");
+}
+
 
 //function to generate a random paragraph
 char* getRandomParagraph(FILE* file) 
@@ -182,9 +258,14 @@ void promptDifficulty(Difficulty *difficulty)
 //function to process attempts
 void processAttempts(FILE* file) 
 {
+    srand((unsigned int)time(NULL));//seed value is set to unsigned int time
     
-    printf("Welcome to Typing Tutor!\n"); //welcome message
+    printf("Welcome to Typing Tutor!\n");//welcome message
+    UserProfile profile;   // Initialize user profile and stats
+    loadUserProfile(&profile); //  Load user profile from file
     //local variable declarations
+
+
     char input[max_para_length];
     Difficulty difficulty;
     TypingStats attempts[max_attempts];
@@ -251,7 +332,9 @@ void processAttempts(FILE* file)
         printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
         printf("--------------------------------------------------------\n");
 
-        attempts[numAttempts++] = currentAttempt; //last 10 attempts are stored here
+        attempts[numAttempts++] = currentAttempt;//last 10 attempts are stored here
+        updateUserProfile(&profile, &currentAttempt); //  Update profile after each attempt
+
 
 
         if (numAttempts >= max_attempts)
@@ -275,6 +358,7 @@ void processAttempts(FILE* file)
 
         {
             displayPreviousAttempts(attempts, numAttempts);
+            displayUserSummary(&profile); //  Display summary at the end
             printf("\nThanks for using Typing Tutor!\n");
             break;
         }
@@ -283,7 +367,9 @@ void processAttempts(FILE* file)
     }
 
 
-    fclose(file); //file is closed
+     
+    fclose(file);//file is closed
+
 }
 //main function
 int main() {
