@@ -92,8 +92,11 @@ void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
     FILE* f = fopen(filename, "w");
 
     if (f != NULL) {
-        fprintf(f, "%.2lf %.2lf %.2lf %.2lf %d", profile->bestSpeed, profile->bestAccuracy,
-                profile->totalSpeed, profile->totalAccuracy, profile->totalAttempts);
+        fprintf(f, "BestSpeed: %.2lf\n", profile->bestSpeed);
+        fprintf(f, "BestAccuracy: %.2lf\n", profile->bestAccuracy);
+        fprintf(f, "TotalSpeed: %.2lf\n", profile->totalSpeed);
+        fprintf(f, "TotalAccuracy: %.2lf\n", profile->totalAccuracy);
+        fprintf(f, "TotalAttempts: %d\n", profile->totalAttempts);
         fclose(f);
     } else {
         perror("Error saving user profile");
@@ -229,77 +232,85 @@ void promptDifficulty(Difficulty *difficulty) {
     }
 }
 
-// Main typing loop
-void processAttempts(FILE* file) {
+// // Main typing loop
+int main() {
     srand((unsigned int)time(NULL));
-
-    printf("Welcome to Typing Tutor!\n");
-
-    UserProfile profile;
-    loadUserProfile(&profile);
-
-    char input[max_para_length];
-    Difficulty difficulty;
+    UserProfile user;
     TypingStats attempts[max_attempts];
-    int numAttempts = 0;
-    int caseChoice;
+    Difficulty difficulty;
 
+    loadUserProfile(&user);
     promptDifficulty(&difficulty);
 
-    while (numAttempts < max_attempts) {
-        char *currentPara = getRandomParagraph(file);
+    int numAttempts = 0;
+    char tryAgain;
 
-        printf("Enable case-insensitive typing? (1 = YES, 0 = NO): ");
-        scanf("%d", &caseChoice);
-        while (getchar() != '\n');
-
-        printf("\nType the following paragraph:\n%s\n", currentPara);
-        printf("Your input:\n");
-
-        clock_t startTime = clock();
-        fflush(stdout);
-
-        if (fgets(input, sizeof(input), stdin) == NULL) {
-            perror("Error reading input");
-            exit(EXIT_FAILURE);
+    do {
+        FILE* paraFile = fopen("paragraphs.txt", "r");
+        if (!paraFile) {
+            perror("Error opening paragraphs file");
+            return 1;
         }
 
-        clock_t endTime = clock();
-        double elapsedTime = (double)(endTime - startTime) / CLOCKS_PER_SEC;
+        TypingStats currentStats;
+        currentStats.caseInsensitive = 0; // Case sensitivity enabled by default
 
-        TypingStats stats;
-        stats.caseInsensitive = caseChoice;
-        printTypingStats(elapsedTime, input, currentPara, difficulty, &stats);
-
-        attempts[numAttempts++] = stats;
-        updateUserProfile(&profile, &stats);
-        free(currentPara);
-
-        printf("\nDo you want to try another paragraph? (y/n): ");
-        char ch = getchar();
+        printf("\nTyping will be case sensitive by default.\n");
+        printf("Do you want to disable case sensitivity? (y/n): ");
+        char toggleCase;
+        scanf(" %c", &toggleCase);
         while (getchar() != '\n');
-        if (ch != 'y' && ch != 'Y') break;
-        rewind(file);
-    }
+        if (tolower(toggleCase) == 'y') {
+            currentStats.caseInsensitive = 1;
+        }
 
+        char* paragraph = getRandomParagraph(paraFile);
+        fclose(paraFile);
+        printf("\nType the following paragraph:\n\n%s\n", paragraph);
+        printf("\nPress Enter when you finish typing.\n\n");
+
+        char inputText[max_para_length];
+        clock_t start = clock();
+        fgets(inputText, max_para_length, stdin);
+        clock_t end = clock();
+
+        // Remove newline if present
+        size_t inputLen = strlen(inputText);
+        if (inputLen > 0 && inputText[inputLen - 1] == '\n') {
+            inputText[inputLen - 1] = '\0';
+        }
+
+        double elapsedTime = (double)(end - start) / CLOCKS_PER_SEC;
+
+        // Enhanced paste detection logic
+        if (elapsedTime < 1.0 && strlen(inputText) > 20) {
+            printf("\n⚠️ Detected input too fast! Looks like it was pasted. Try typing it manually.\n\n");
+            continue;
+        }
+
+        printTypingStats(elapsedTime, inputText, paragraph, difficulty, &currentStats);
+        attempts[numAttempts++] = currentStats;
+        updateUserProfile(&user, &currentStats);
+
+        free(paragraph);
+
+        printf("\nTyping Speed: %.2f cpm\n", currentStats.typingSpeed);
+        printf("Accuracy: %.2f%%\n", currentStats.accuracy);
+        printf("Wrong Characters: %d\n", currentStats.wrongChars);
+
+        if (numAttempts < max_attempts) {
+            printf("\nDo you want to try again? (y/n): ");
+            scanf(" %c", &tryAgain);
+            while (getchar() != '\n');
+        } else {
+            printf("\nYou've reached the maximum number of attempts.\n");
+            tryAgain = 'n';
+        }
+
+    } while (tolower(tryAgain) == 'y');
+
+    displayUserSummary(&user);
     displayPreviousAttempts(attempts, numAttempts);
-    displayUserSummary(&profile);
-}
-//main function
-int main() {
-
-    // Seed randomness once at the start of the program
-    srand((unsigned int)time(NULL)); 
-    //open the file in read mode
-    FILE* file = fopen("paragraphs.txt", "r");//the name of the file is stored in this file variable 
-    if (file == NULL) 
-
-    {
-        perror("Error opening file 'paragraphs.txt'");
-        return 1;
-    }
-
-    processAttempts(file);
 
     return 0;
 }
