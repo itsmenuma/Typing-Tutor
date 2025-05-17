@@ -1,4 +1,3 @@
-
 //header files
 #include<stdio.h>
 #include<stdlib.h>
@@ -19,7 +18,6 @@
 #define MEDIUM_HARD_SPEED 12
 #define HARD_MAX_SPEED 16
 
-
 //structure to store user profile
 typedef struct {
     char username[50];
@@ -35,17 +33,14 @@ typedef struct{
     int easy;
     int medium;
     int hard;
-}Difficulty;
+} Difficulty;
 
 //structure to store typing statistics
-typedef struct 
-
-{
+typedef struct  {
     double typingSpeed;
     double accuracy;
     int wrongChars;
     char paragraph[max_para_length];
-    int caseInsensitive;
 } TypingStats;
 
 // Function to load the user profile from a file
@@ -56,14 +51,20 @@ void loadUserProfile(UserProfile* profile) {
     if (len > 0 && profile->username[len - 1] == '\n') {
         profile->username[len - 1] = '\0';
     }
-
     char filename[100];
     snprintf(filename, sizeof(filename), "%s_profile.txt", profile->username);
     FILE* f = fopen(filename, "r");
-
     if (f != NULL) {
-        fscanf(f, "%lf %lf %lf %lf %d", &profile->bestSpeed, &profile->bestAccuracy,
-               &profile->totalSpeed, &profile->totalAccuracy, &profile->totalAttempts);
+        if (fscanf(f, "%lf %lf %lf %lf %d",
+                   &profile->bestSpeed, &profile->bestAccuracy,
+                   &profile->totalSpeed, &profile->totalAccuracy,
+                   &profile->totalAttempts) != 5) {
+            profile->bestSpeed = 0;
+            profile->bestAccuracy = 0;
+            profile->totalSpeed = 0;
+            profile->totalAccuracy = 0;
+            profile->totalAttempts = 0;
+        }
         fclose(f);
     } else {
         profile->bestSpeed = 0;
@@ -82,21 +83,18 @@ void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
     if (currentAttempt->accuracy > profile->bestAccuracy) {
         profile->bestAccuracy = currentAttempt->accuracy;
     }
-
     profile->totalSpeed += currentAttempt->typingSpeed;
     profile->totalAccuracy += currentAttempt->accuracy;
     profile->totalAttempts++;
-
     char filename[100];
     snprintf(filename, sizeof(filename), "%s_profile.txt", profile->username);
     FILE* f = fopen(filename, "w");
 
     if (f != NULL) {
-        fprintf(f, "BestSpeed: %.2lf\n", profile->bestSpeed);
-        fprintf(f, "BestAccuracy: %.2lf\n", profile->bestAccuracy);
-        fprintf(f, "TotalSpeed: %.2lf\n", profile->totalSpeed);
-        fprintf(f, "TotalAccuracy: %.2lf\n", profile->totalAccuracy);
-        fprintf(f, "TotalAttempts: %d\n", profile->totalAttempts);
+        fprintf(f, "%.2lf %.2lf %.2lf %.2lf %d\n",
+                profile->bestSpeed, profile->bestAccuracy,
+                profile->totalSpeed, profile->totalAccuracy,
+                profile->totalAttempts);
         fclose(f);
     } else {
         perror("Error saving user profile");
@@ -107,7 +105,7 @@ void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
 void displayUserSummary(const UserProfile* profile) {
     printf("\nUser Summary for %s:\n", profile->username);
     printf("--------------------------------------------------------\n");
-    printf("Best Typing Speed: %.2f cpm\n", profile->bestSpeed);
+    printf("Best Typing Speed: %.2f cpm\n", profile->bestSpeed);  
     printf("Best Accuracy: %.2f%%\n", profile->bestAccuracy);
     if (profile->totalAttempts > 0) {
         printf("Average Typing Speed: %.2f cpm\n", profile->totalSpeed / profile->totalAttempts);
@@ -149,18 +147,12 @@ char* getRandomParagraph(FILE* file) {
 }
 
 // Function to calculate and print typing statistics
-void printTypingStats(double elapsedTime, const char* input, const char* correctText, Difficulty difficulty, TypingStats* stats) {
+void printTypingStats(double elapsedTime, const char* input, const char* correctText, TypingStats* stats) {
     int correctCount = 0, wrongCount = 0;
     int minLen = strlen(correctText) < strlen(input) ? strlen(correctText) : strlen(input);
 
     for (int i = 0; i < minLen; i++) {
-        char c1 = correctText[i];
-        char c2 = input[i];
-        if (stats->caseInsensitive) {
-            c1 = tolower(c1);
-            c2 = tolower(c2);
-        }
-        if (c1 == c2)
+        if (correctText[i] == input[i])
             correctCount++;
         else
             wrongCount++;
@@ -169,9 +161,9 @@ void printTypingStats(double elapsedTime, const char* input, const char* correct
     int totalCharacters = minLen > 0 ? minLen : 1;
     double accuracy = (double)correctCount / totalCharacters * 100;
 
-    if (elapsedTime < 1) {
+    if (elapsedTime < 3) {
         printf("\n### Please do not paste or hit enter immediately ###\n\n");
-        elapsedTime = 1;
+        elapsedTime = 3;
     }
 
     double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0);
@@ -190,7 +182,7 @@ void displayPreviousAttempts(TypingStats attempts[], int numAttempts) {
     printf("--------------------------------------------------------\n");
 
     for (int i = 0; i < numAttempts; i++) {
-        printf("|   %2d    |        %.2f         |  %.2f%%   |     %2d      |\n",
+        printf("|   %2d    |        %.2f       |  %.2f%%   |     %2d      |\n",
                i + 1, attempts[i].typingSpeed, attempts[i].accuracy, attempts[i].wrongChars);
     }
 
@@ -210,7 +202,6 @@ void promptDifficulty(Difficulty *difficulty) {
             while (getchar() != '\n');
             continue;
         }
-
         while (getchar() != '\n');
 
         if (choice >= 1 && choice <= 3) break;
@@ -232,7 +223,7 @@ void promptDifficulty(Difficulty *difficulty) {
     }
 }
 
-// // Main typing loop
+// Main typing loop
 int main() {
     srand((unsigned int)time(NULL));
     UserProfile user;
@@ -253,16 +244,6 @@ int main() {
         }
 
         TypingStats currentStats;
-        currentStats.caseInsensitive = 0; // Case sensitivity enabled by default
-
-        printf("\nTyping will be case sensitive by default.\n");
-        printf("Do you want to disable case sensitivity? (y/n): ");
-        char toggleCase;
-        scanf(" %c", &toggleCase);
-        while (getchar() != '\n');
-        if (tolower(toggleCase) == 'y') {
-            currentStats.caseInsensitive = 1;
-        }
 
         char* paragraph = getRandomParagraph(paraFile);
         fclose(paraFile);
@@ -270,25 +251,20 @@ int main() {
         printf("\nPress Enter when you finish typing.\n\n");
 
         char inputText[max_para_length];
+        int idx = 0;
+        char ch;
         clock_t start = clock();
-        fgets(inputText, max_para_length, stdin);
-        clock_t end = clock();
-
-        // Remove newline if present
-        size_t inputLen = strlen(inputText);
-        if (inputLen > 0 && inputText[inputLen - 1] == '\n') {
-            inputText[inputLen - 1] = '\0';
+        while (idx < max_para_length - 1) {
+            ch = getchar();
+            if (ch == '\n') break;
+            inputText[idx++] = ch;
         }
+        inputText[idx] = '\0';
+        clock_t end = clock();
 
         double elapsedTime = (double)(end - start) / CLOCKS_PER_SEC;
 
-        // Enhanced paste detection logic
-        if (elapsedTime < 1.0 && strlen(inputText) > 20) {
-            printf("\n⚠️ Detected input too fast! Looks like it was pasted. Try typing it manually.\n\n");
-            continue;
-        }
-
-        printTypingStats(elapsedTime, inputText, paragraph, difficulty, &currentStats);
+        printTypingStats(elapsedTime, inputText, paragraph, &currentStats);
         attempts[numAttempts++] = currentStats;
         updateUserProfile(&user, &currentStats);
 
