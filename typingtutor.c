@@ -274,6 +274,20 @@ void promptDifficulty(Difficulty *difficulty)
             *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
     }
 }
+// Function to generate a certificate for the user
+void generateCertificate(UserProfile *profile, TypingStats *currentAttempt) {
+    const double MIN_SPEED = 40.0;  // Minimum typing speed in characters per minute (cpm)
+    const double MIN_ACCURACY = 90.0; // Minimum accuracy percentage
+
+    if (currentAttempt->typingSpeed >= MIN_SPEED && currentAttempt->accuracy >= MIN_ACCURACY) {
+        printf("\n🎉 Congratulations, %s! 🎉\n", profile->username);
+        printf("You have achieved the Typing Master Certificate!\n");
+        printf("Typing Speed: %.2f cpm, Accuracy: %.2f%%\n", currentAttempt->typingSpeed, currentAttempt->accuracy);
+    } else {
+        printf("\nKeep practicing to earn the Typing Master Certificate!\n");
+        printf("Required: Speed ≥ %.2f cpm, Accuracy ≥ %.2f%%\n", MIN_SPEED, MIN_ACCURACY);
+    }
+}
 //function to process attempts
 void processAttempts(FILE* file) 
 {
@@ -370,7 +384,7 @@ void processAttempts(FILE* file)
         printf("Accuracy: %.2f%%\n", currentAttempt.accuracy);
         printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
         printf("--------------------------------------------------------\n");
-
+generateCertificate(&profile, &currentAttempt); // Call to generate certificate
         if (numAttempts >= max_attempts)
         {
             displayPreviousAttempts(attempts, numAttempts);
