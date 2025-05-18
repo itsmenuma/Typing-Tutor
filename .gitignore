@@ -1,3 +1,5 @@
 *.exe
 *.o
 .vscode/
+a.out
+*_profile.txt
