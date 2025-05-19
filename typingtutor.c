@@ -311,6 +311,31 @@ void promptDifficulty(Difficulty *difficulty, char *difficultyLevel)
     }
 }
 
+// Function to generate a certificate for the user
+void generateCertificate(UserProfile *profile, TypingStats *currentAttempt) {
+    const double MIN_SPEED = 40.0;  // Minimum typing speed in characters per minute (cpm)
+    const double MIN_ACCURACY = 90.0; // Minimum accuracy percentage
+
+    if (currentAttempt->typingSpeed >= MIN_SPEED && currentAttempt->accuracy >= MIN_ACCURACY) {
+        printf("\n🎉 Congratulations, %s! 🎉\n", profile->username);
+        printf("You have achieved the Typing Master Certificate!\n");
+        printf("Typing Speed: %.2f cpm, Accuracy: %.2f%%\n", currentAttempt->typingSpeed, currentAttempt->accuracy);
+    } else {
+        printf("\nKeep practicing to earn the Typing Master Certificate!\n");
+        printf("Required: Speed ≥ %.2f cpm, Accuracy ≥ %.2f%%\n", MIN_SPEED, MIN_ACCURACY);
+    }
+}
+//function to process attempts
+void processAttempts(FILE* file) 
+{
+    srand((unsigned int)time(NULL));//seed value is set to unsigned int time
+    
+    printf("Welcome to Typing Tutor!\n");//welcome message
+    UserProfile profile;   // Initialize user profile and stats
+    loadUserProfile(&profile); //  Load user profile from file
+    //local variable declarations
+
+}
 // Load leaderboard from file
 void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries)
 {
@@ -558,7 +583,7 @@ void processAttempts(FILE *file)
         printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
         printf("Time taken: %.2f seconds\n", elapsedTime);
         printf("--------------------------------------------------------\n");
-
+generateCertificate(&profile, &currentAttempt); // Call to generate certificate
         if (numAttempts >= max_attempts)
         {
             displayPreviousAttempts(attempts, numAttempts);
