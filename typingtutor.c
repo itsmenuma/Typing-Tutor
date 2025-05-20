@@ -1,13 +1,12 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-#include<time.h>
-#include<ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <ctype.h>
 
 #define max_para_length 200
 #define max_file_line_length 200
 #define max_attempts 10
-#define max_leaderboard_entries 100
 
 #define EASY_SPEED 5
 #define MEDIUM_SPEED 8
@@ -39,14 +38,7 @@ typedef struct {
     char paragraph[max_para_length];
 } TypingStats;
 
-typedef struct {
-    char username[50];
-    double typingSpeed;
-    double wordsPerMinute;
-    double accuracy;
-    char difficulty[20];
-} LeaderboardEntry;
-
+// Load user profile from file if exists
 void loadUserProfile(UserProfile* profile) {
     printf("Enter your username: ");
     fgets(profile->username, sizeof(profile->username), stdin);
@@ -54,14 +46,17 @@ void loadUserProfile(UserProfile* profile) {
     if (len > 0 && profile->username[len - 1] == '\n') {
         profile->username[len - 1] = '\0';
     }
+
     char filename[100];
     snprintf(filename, sizeof(filename), "%s_profile.txt", profile->username);
+
     FILE* f = fopen(filename, "r");
     if (f != NULL) {
         if (fscanf(f, "%lf %lf %lf %lf %d",
                    &profile->bestSpeed, &profile->bestAccuracy,
                    &profile->totalSpeed, &profile->totalAccuracy,
                    &profile->totalAttempts) != 5) {
+            // File content invalid, reset stats
             profile->bestSpeed = 0;
             profile->bestAccuracy = 0;
             profile->totalSpeed = 0;
@@ -70,11 +65,16 @@ void loadUserProfile(UserProfile* profile) {
         }
         fclose(f);
     } else {
-        profile->bestSpeed = profile->bestAccuracy = profile->totalSpeed = profile->totalAccuracy = 0;
+        // New user, initialize stats
+        profile->bestSpeed = 0;
+        profile->bestAccuracy = 0;
+        profile->totalSpeed = 0;
+        profile->totalAccuracy = 0;
         profile->totalAttempts = 0;
     }
 }
 
+// Update and save user profile after each attempt
 void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
     if (currentAttempt->typingSpeed > profile->bestSpeed) {
         profile->bestSpeed = currentAttempt->typingSpeed;
@@ -85,10 +85,11 @@ void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
     profile->totalSpeed += currentAttempt->typingSpeed;
     profile->totalAccuracy += currentAttempt->accuracy;
     profile->totalAttempts++;
+
     char filename[100];
     snprintf(filename, sizeof(filename), "%s_profile.txt", profile->username);
-    FILE* f = fopen(filename, "w");
 
+    FILE* f = fopen(filename, "w");
     if (f != NULL) {
         fprintf(f, "%.2lf %.2lf %.2lf %.2lf %d\n",
                 profile->bestSpeed, profile->bestAccuracy,
@@ -100,6 +101,7 @@ void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
     }
 }
 
+// Display user summary statistics
 void displayUserSummary(const UserProfile* profile) {
     printf("\nUser Summary for %s:\n", profile->username);
     printf("--------------------------------------------------------\n");
@@ -113,6 +115,7 @@ void displayUserSummary(const UserProfile* profile) {
     printf("--------------------------------------------------------\n");
 }
 
+// Read paragraphs from file and pick a random one
 char* getRandomParagraph(FILE* file) {
     char* paragraphs[100];
     int count = 0;
@@ -120,7 +123,7 @@ char* getRandomParagraph(FILE* file) {
 
     while (fgets(line, sizeof(line), file) != NULL && count < 100) {
         size_t len = strlen(line);
-        if (len > 1 && line[len - 1] == '\n') {
+        if (len > 0 && line[len - 1] == '\n') {
             line[len - 1] = '\0';
         }
         if (strlen(line) > 0) {
@@ -136,16 +139,17 @@ char* getRandomParagraph(FILE* file) {
     int randomIndex = rand() % count;
     char* result = strdup(paragraphs[randomIndex]);
 
-    for (int i = 0; i < count; ++i) {
+    for (int i = 0; i < count; i++) {
         free(paragraphs[i]);
     }
 
     return result;
 }
 
+// Calculate and print typing stats
 void printTypingStats(double elapsedTime, const char* input, const char* correctText, TypingStats* stats) {
     int correctCount = 0, wrongCount = 0;
-    int minLen = strlen(correctText) < strlen(input) ? strlen(correctText) : strlen(input);
+    int minLen = (int)(strlen(correctText) < strlen(input) ? strlen(correctText) : strlen(input));
 
     for (int i = 0; i < minLen; i++) {
         if (correctText[i] == input[i])
@@ -162,31 +166,34 @@ void printTypingStats(double elapsedTime, const char* input, const char* correct
         elapsedTime = 3;
     }
 
-    double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0);
-    double wpm = typingSpeed / 1.0;
+    double typingSpeed = (totalCharacters / 5.0) / (elapsedTime / 60.0); // CPM approx
+    double wpm = typingSpeed / 1.0; // same as CPM here
 
     stats->typingSpeed = typingSpeed;
     stats->wordsPerMinute = wpm;
     stats->accuracy = accuracy;
     stats->wrongChars = wrongCount;
     strncpy(stats->paragraph, correctText, max_para_length);
+    stats->paragraph[max_para_length - 1] = '\0';  // Safety
 }
 
+// Display all previous attempts
 void displayPreviousAttempts(TypingStats attempts[], int numAttempts) {
     printf("\nPrevious Attempts:\n");
-    printf("---------------------------------------------------------------------\n");
-    printf("| Attempt |  CPM  |  WPM  | Accuracy (%%) | Wrong Chars |\n");
-    printf("---------------------------------------------------------------------\n");
+    printf("--------------------------------------------------------------\n");
+    printf("| Attempt |  CPM  | Accuracy (%%) | Wrong Characters |\n");
+    printf("--------------------------------------------------------------\n");
 
     for (int i = 0; i < numAttempts; i++) {
-        printf("|   %2d    | %.2f | %.2f |     %.2f%%     |     %2d      |\n",
-               i + 1, attempts[i].typingSpeed, attempts[i].wordsPerMinute, attempts[i].accuracy, attempts[i].wrongChars);
+        printf("|   %2d    | %.2f |    %.2f%%    |        %2d       |\n",
+               i + 1, attempts[i].typingSpeed, attempts[i].accuracy, attempts[i].wrongChars);
     }
 
-    printf("---------------------------------------------------------------------\n");
+    printf("--------------------------------------------------------------\n");
 }
 
-void promptDifficulty(Difficulty *difficulty) {
+// Prompt user for difficulty level (placeholder for future use)
+void promptDifficulty(Difficulty* difficulty) {
     int choice;
     printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
 
@@ -194,15 +201,16 @@ void promptDifficulty(Difficulty *difficulty) {
         printf("Enter your choice: ");
         if (scanf("%d", &choice) != 1) {
             printf("Invalid input. Please enter a number.\n");
-            while (getchar() != '\n');
+            while (getchar() != '\n'); // flush input buffer
             continue;
         }
-        while (getchar() != '\n');
+        while (getchar() != '\n'); // flush input buffer
 
         if (choice >= 1 && choice <= 3) break;
-        printf("Invalid choice. Please enter a number between 1 and 3.\n");
+        printf("Invalid choice. Please enter 1, 2, or 3.\n");
     }
 
+    // Assign speeds based on choice (can be extended)
     switch (choice) {
         case 1:
             *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
@@ -220,6 +228,7 @@ void promptDifficulty(Difficulty *difficulty) {
 
 int main() {
     srand((unsigned int)time(NULL));
+
     UserProfile user;
     TypingStats attempts[max_attempts];
     Difficulty difficulty;
@@ -241,6 +250,7 @@ int main() {
 
         char* paragraph = getRandomParagraph(paraFile);
         fclose(paraFile);
+
         printf("\nType the following paragraph:\n\n%s\n", paragraph);
         printf("\nPress Enter when you finish typing.\n\n");
 
@@ -248,14 +258,15 @@ int main() {
         int idx = 0;
         char ch;
         clock_t start = clock();
+
         while (idx < max_para_length - 1) {
             ch = getchar();
             if (ch == '\n') break;
             inputText[idx++] = ch;
         }
         inputText[idx] = '\0';
-        clock_t end = clock();
 
+        clock_t end = clock();
         double elapsedTime = (double)(end - start) / CLOCKS_PER_SEC;
 
         printTypingStats(elapsedTime, inputText, paragraph, &currentStats);
@@ -271,7 +282,7 @@ int main() {
         if (numAttempts < max_attempts) {
             printf("\nDo you want to try again? (y/n): ");
             scanf(" %c", &tryAgain);
-            while (getchar() != '\n');
+            while (getchar() != '\n'); // flush newline leftover
         } else {
             printf("\nYou've reached the maximum number of attempts.\n");
             tryAgain = 'n';
