@@ -1,4 +1,3 @@
-
 //header files
 #include<stdio.h>
 #include<stdlib.h>
@@ -40,12 +39,26 @@ typedef struct
 } Difficulty;
 
 //structure to store typing statistics
-typedef struct  {
+typedef struct {
     double typingSpeed;
     double accuracy;
     int wrongChars;
     char paragraph[max_para_length];
 } TypingStats;
+
+// Structure for leaderboard entry
+typedef struct {
+    char username[50];
+    double typingSpeed;
+    double accuracy;
+    char difficulty[20];
+} LeaderboardEntry;
+
+// Function declarations
+void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries);
+void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries);
+void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty);
+void displayLeaderboard(const char *difficulty);
 
 // Function to load the user profile from a file
 void loadUserProfile(UserProfile* profile) {
@@ -73,8 +86,6 @@ void loadUserProfile(UserProfile* profile) {
     }
     else
     {
-        if (f)
-            fclose(f);
         profile->bestSpeed = profile->bestAccuracy = profile->totalSpeed = profile->totalAccuracy = 0;
         profile->totalAttempts = 0;
     }
@@ -84,7 +95,8 @@ void loadUserProfile(UserProfile* profile) {
 void updateUserProfile(UserProfile* profile, TypingStats* currentAttempt) {
     if (currentAttempt->typingSpeed > profile->bestSpeed) {
         profile->bestSpeed = currentAttempt->typingSpeed;
-    if (currentAttempt->accuracy > profile->bestAccuracy)
+    }
+    if (currentAttempt->accuracy > profile->bestAccuracy) {
         profile->bestAccuracy = currentAttempt->accuracy;
     }
     profile->totalSpeed += currentAttempt->typingSpeed;
@@ -184,11 +196,11 @@ void printTypingStats(double elapsedTime, const char* input, const char* correct
 void displayPreviousAttempts(TypingStats attempts[], int numAttempts) {
     printf("\nPrevious Attempts:\n");
     printf("---------------------------------------------------------------------\n");
-    printf("| Attempt |  CPM  |  WPM  | Accuracy (%%) | Wrong Chars |\n");
+    printf("| Attempt |  CPM  | Accuracy (%%) | Wrong Chars |\n");
     printf("---------------------------------------------------------------------\n");
 
     for (int i = 0; i < numAttempts; i++) {
-        printf("|   %2d    |        %.2f       |  %.2f%%   |     %2d      |\n",
+        printf("|   %2d    | %6.2f |  %6.2f%%   |     %2d      |\n",
                i + 1, attempts[i].typingSpeed, attempts[i].accuracy, attempts[i].wrongChars);
     }
 
@@ -225,27 +237,42 @@ void promptDifficulty(Difficulty *difficulty) {
             break;
         default:
             *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
-
     }
+}
 
+// Load leaderboard from file
+void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries) {
+    FILE *file = fopen("leaderboard.txt", "r");
+    *numEntries = 0;
+    
+    if (!file) {
+        return; // No leaderboard file yet
+    }
+    
+    char line[256];
+    while (*numEntries < max_leaderboard_entries && fgets(line, sizeof(line), file)) {
+        LeaderboardEntry entry;
+        if (sscanf(line, "%49s %lf %lf %19s", 
+                  entry.username, &entry.typingSpeed, &entry.accuracy, entry.difficulty) == 4) {
+            leaderboard[(*numEntries)++] = entry;
+        }
+    }
+    
     fclose(file);
 }
 
 // Save leaderboard to file
-void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries)
-{
+void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries) {
     FILE *file = fopen("leaderboard.txt", "w");
-    if (!file)
-    {
+    if (!file) {
         perror("Error saving leaderboard");
         return;
     }
 
-    for (int i = 0; i < numEntries; i++)
-    {
-        fprintf(file, "%s %.2f %.2f %.2f %s\n", leaderboard[i].username,
+    for (int i = 0; i < numEntries; i++) {
+        fprintf(file, "%s %.2f %.2f %s\n", 
+                leaderboard[i].username,
                 leaderboard[i].typingSpeed,
-                leaderboard[i].wordsPerMinute,
                 leaderboard[i].accuracy,
                 leaderboard[i].difficulty);
     }
@@ -254,8 +281,7 @@ void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries)
 }
 
 // Update leaderboard with current attempt
-void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty)
-{
+void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty) {
     LeaderboardEntry leaderboard[max_leaderboard_entries];
     int numEntries;
 
@@ -266,43 +292,33 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
     LeaderboardEntry newEntry;
     strncpy(newEntry.username, profile->username, sizeof(newEntry.username));
     newEntry.typingSpeed = currentAttempt->typingSpeed;
-    newEntry.wordsPerMinute = currentAttempt->wordsPerMinute;
     newEntry.accuracy = currentAttempt->accuracy;
     strncpy(newEntry.difficulty, difficulty, sizeof(newEntry.difficulty));
 
     // Add the new entry to the leaderboard
-    if (numEntries < max_leaderboard_entries)
-    {
+    if (numEntries < max_leaderboard_entries) {
         leaderboard[numEntries++] = newEntry;
-    }
-    else
-    {
+    } else {
         // If leaderboard is full, replace the worst entry if the current one is better
         int worstIndex = 0;
-        for (int i = 1; i < numEntries; i++)
-        {
+        for (int i = 1; i < numEntries; i++) {
             if (leaderboard[i].typingSpeed < leaderboard[worstIndex].typingSpeed &&
-                strcmp(leaderboard[i].difficulty, difficulty) == 0)
-            {
+                strcmp(leaderboard[i].difficulty, difficulty) == 0) {
                 worstIndex = i;
             }
         }
 
         if (newEntry.typingSpeed > leaderboard[worstIndex].typingSpeed ||
-            numEntries < max_leaderboard_entries)
-        {
+            numEntries < max_leaderboard_entries) {
             leaderboard[worstIndex] = newEntry;
         }
     }
 
     // Sort the leaderboard by typing speed (descending order) for each difficulty
-    for (int i = 0; i < numEntries - 1; i++)
-    {
-        for (int j = i + 1; j < numEntries; j++)
-        {
+    for (int i = 0; i < numEntries - 1; i++) {
+        for (int j = i + 1; j < numEntries; j++) {
             if (strcmp(leaderboard[i].difficulty, leaderboard[j].difficulty) == 0 &&
-                leaderboard[i].typingSpeed < leaderboard[j].typingSpeed)
-            {
+                leaderboard[i].typingSpeed < leaderboard[j].typingSpeed) {
                 LeaderboardEntry temp = leaderboard[i];
                 leaderboard[i] = leaderboard[j];
                 leaderboard[j] = temp;
@@ -315,8 +331,7 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
 }
 
 // Display leaderboard for a specific difficulty
-void displayLeaderboard(const char *difficulty)
-{
+void displayLeaderboard(const char *difficulty) {
     LeaderboardEntry leaderboard[max_leaderboard_entries];
     int numEntries;
 
@@ -325,18 +340,15 @@ void displayLeaderboard(const char *difficulty)
 
     printf("\nLeaderboard for %s Difficulty:\n", difficulty);
     printf("-------------------------------------------------------------\n");
-    printf("| Rank | Username       | CPM    | WPM    | Accuracy (%%) |\n");
+    printf("| Rank | Username       | CPM    | Accuracy (%%) |\n");
     printf("-------------------------------------------------------------\n");
 
     int rank = 1;
-    for (int i = 0; i < numEntries; i++)
-    {
-        if (strcmp(leaderboard[i].difficulty, difficulty) == 0)
-        {
-            printf("| %4d | %-14s | %6.2f | %6.2f | %10.2f |\n",
+    for (int i = 0; i < numEntries; i++) {
+        if (strcmp(leaderboard[i].difficulty, difficulty) == 0) {
+            printf("| %4d | %-14s | %6.2f | %10.2f |\n",
                    rank++, leaderboard[i].username,
                    leaderboard[i].typingSpeed,
-                   leaderboard[i].wordsPerMinute,
                    leaderboard[i].accuracy);
 
             if (rank > 10)
@@ -344,8 +356,7 @@ void displayLeaderboard(const char *difficulty)
         }
     }
 
-    if (rank == 1)
-    {
+    if (rank == 1) {
         printf("|      No entries for this difficulty level yet          |\n");
     }
 
@@ -364,6 +375,16 @@ int main() {
 
     int numAttempts = 0;
     char tryAgain;
+    const char *difficultyStr;
+
+    // Determine difficulty string based on selected difficulty
+    if (difficulty.easy == EASY_SPEED) {
+        difficultyStr = "Easy";
+    } else if (difficulty.easy == EASY_MEDIUM_SPEED) {
+        difficultyStr = "Medium";
+    } else {
+        difficultyStr = "Hard";
+    }
 
     do {
         FILE* paraFile = fopen("paragraphs.txt", "r");
@@ -387,7 +408,6 @@ int main() {
             ch = getchar();
             if (ch == '\n') break;
             inputText[idx++] = ch;
-
         }
         inputText[idx] = '\0';
         clock_t end = clock();
@@ -397,6 +417,7 @@ int main() {
         printTypingStats(elapsedTime, inputText, paragraph, &currentStats);
         attempts[numAttempts++] = currentStats;
         updateUserProfile(&user, &currentStats);
+        updateLeaderboard(&user, &currentStats, difficultyStr);
 
         free(paragraph);
 
@@ -415,9 +436,9 @@ int main() {
 
     } while (tolower(tryAgain) == 'y');
 
-
     displayUserSummary(&user);
     displayPreviousAttempts(attempts, numAttempts);
+    displayLeaderboard(difficultyStr);
 
     return 0;
 }
