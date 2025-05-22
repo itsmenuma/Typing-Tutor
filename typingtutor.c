@@ -21,6 +21,9 @@
 #define MEDIUM_HARD_SPEED 12
 #define HARD_MAX_SPEED 16
 
+
+
+
 //structure to store user profile
 typedef struct {
     char username[50];
@@ -45,7 +48,19 @@ typedef struct  {
     double accuracy;
     int wrongChars;
     char paragraph[max_para_length];
+    double wordsPerMinute;
+
 } TypingStats;
+
+typedef struct {
+    char username[50];
+    double typingSpeed;
+    double wordsPerMinute;
+    double accuracy;
+    char difficulty[20];
+} LeaderboardEntry;
+
+void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries);
 
 // Function to load the user profile from a file
 void loadUserProfile(UserProfile* profile) {
@@ -228,7 +243,6 @@ void promptDifficulty(Difficulty *difficulty) {
 
     }
 
-    fclose(file);
 }
 
 // Save leaderboard to file
@@ -351,6 +365,28 @@ void displayLeaderboard(const char *difficulty)
 
     printf("-------------------------------------------------------------\n");
 }
+
+void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries) {
+    FILE *file = fopen("leaderboard.txt", "r");
+    if (!file) {
+        *numEntries = 0;
+        return;
+    }
+
+    *numEntries = 0;
+    while (fscanf(file, "%49s %lf %lf %lf %19s",
+                  leaderboard[*numEntries].username,
+                  &leaderboard[*numEntries].typingSpeed,
+                  &leaderboard[*numEntries].wordsPerMinute,
+                  &leaderboard[*numEntries].accuracy,
+                  leaderboard[*numEntries].difficulty) == 5) {
+        (*numEntries)++;
+        if (*numEntries >= max_leaderboard_entries) break;
+    }
+
+    fclose(file);
+}
+
 
 // Main typing loop
 int main() {
