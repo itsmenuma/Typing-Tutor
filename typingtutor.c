@@ -287,7 +287,8 @@ void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries) {
     }
 
     *numEntries = 0;
-    while (fscanf(file, "%s %lf %lf %lf %s", leaderboard[*numEntries].username,
+    while (fscanf(file, "%49s %lf %lf %lf %9s",
+                  leaderboard[*numEntries].username,
                   &leaderboard[*numEntries].typingSpeed,
                   &leaderboard[*numEntries].wordsPerMinute,
                   &leaderboard[*numEntries].accuracy,
