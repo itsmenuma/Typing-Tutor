@@ -5,6 +5,9 @@
 #include<string.h>
 #include<time.h>
 #include<ctype.h>
+#include "paragraphs.h"
+#include "leaderboard.h"
+
 
 //global declarations
 
@@ -122,34 +125,9 @@ void displayUserSummary(const UserProfile* profile) {
 }
 
 // Function to get a random paragraph from file
-char* getRandomParagraph(FILE* file) {
-    char* paragraphs[100];
-    int count = 0;
-    char line[max_file_line_length];
-
-    while (fgets(line, sizeof(line), file) != NULL && count < 100) {
-        size_t len = strlen(line);
-        if (len > 1 && line[len - 1] == '\n') {
-            line[len - 1] = '\0';
-        }
-        if (strlen(line) > 0) {
-            paragraphs[count++] = strdup(line);
-        }
-    }
-
-    if (count == 0) {
-        fprintf(stderr, "No paragraphs found in the file.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    int randomIndex = rand() % count;
-    char* result = strdup(paragraphs[randomIndex]);
-
-    for (int i = 0; i < count; ++i) {
-        free(paragraphs[i]);
-    }
-
-    return result;
+char* getRandomParagraph() {
+    int randomIndex = rand() % embedded_paragraph_count;
+    return strdup(embedded_paragraphs[randomIndex]);
 }
 
 // Function to calculate and print typing statistics
@@ -253,6 +231,21 @@ void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries)
     fclose(file);
 }
 
+void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries) {
+    *numEntries = 0;
+
+    for (int i = 0; i < embedded_leaderboard_count; i++) {
+        sscanf(embedded_leaderboard[i], "%49s %lf %lf %lf %19s",
+               leaderboard[*numEntries].username,
+               &leaderboard[*numEntries].typingSpeed,
+               &leaderboard[*numEntries].wordsPerMinute,
+               &leaderboard[*numEntries].accuracy,
+               leaderboard[*numEntries].difficulty);
+        (*numEntries)++;
+    }
+}
+
+
 // Update leaderboard with current attempt
 void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty)
 {
@@ -352,6 +345,8 @@ void displayLeaderboard(const char *difficulty)
     printf("-------------------------------------------------------------\n");
 }
 
+
+
 // Main typing loop
 int main() {
     srand((unsigned int)time(NULL));
@@ -366,16 +361,11 @@ int main() {
     char tryAgain;
 
     do {
-        FILE* paraFile = fopen("paragraphs.txt", "r");
-        if (!paraFile) {
-            perror("Error opening paragraphs file");
-            return 1;
-        }
+        
 
         TypingStats currentStats;
 
-        char* paragraph = getRandomParagraph(paraFile);
-        fclose(paraFile);
+        char* paragraph = getRandomParagraph();
         printf("\nType the following paragraph:\n\n%s\n", paragraph);
         printf("\nPress Enter when you finish typing.\n\n");
 
