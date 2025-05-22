@@ -212,7 +212,7 @@ for (int i = 0; i < numAttempts; i++) {
 }
 
 // Prompt user to choose difficulty
-void promptDifficulty(Difficulty *difficulty) {
+void promptDifficulty(Difficulty *difficulty, char *difficultyStr) {
     int choice;
     printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
 
@@ -230,19 +230,22 @@ void promptDifficulty(Difficulty *difficulty) {
     }
 
     switch (choice) {
-        case 1:
-            *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
-            break;
-        case 2:
-            *difficulty = (Difficulty){EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED, HARD_MAX_SPEED};
-            break;
-        case 3:
-            *difficulty = (Difficulty){MEDIUM_HARD_SPEED, HARD_MAX_SPEED, HARD_SPEED + 4};
-            break;
-        default:
-            *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
-
-    }
+    case 1:
+        *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
+        strcpy(difficultyStr, "Easy");
+        break;
+    case 2:
+        *difficulty = (Difficulty){EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED, HARD_MAX_SPEED};
+        strcpy(difficultyStr, "Medium");
+        break;
+    case 3:
+        *difficulty = (Difficulty){MEDIUM_HARD_SPEED, HARD_MAX_SPEED, HARD_SPEED + 4};
+        strcpy(difficultyStr, "Hard");
+        break;
+    default:
+        *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
+        strcpy(difficultyStr, "Easy");
+}
 
     
 }
@@ -429,13 +432,16 @@ void showLeaderboardMenu() {
 
 // Main typing loop
 int main() {
+    char selectedDifficulty[10];
+
     srand((unsigned int)time(NULL));
     UserProfile user;
     TypingStats attempts[max_attempts];
     Difficulty difficulty;
 
     loadUserProfile(&user);
-    promptDifficulty(&difficulty);
+    promptDifficulty(&difficulty, selectedDifficulty);
+
 
     int numAttempts = 0;
     char tryAgain;
@@ -472,6 +478,8 @@ int main() {
         printTypingStats(elapsedTime, inputText, paragraph, &currentStats);
         attempts[numAttempts++] = currentStats;
         updateUserProfile(&user, &currentStats);
+        updateLeaderboard(&user, &currentStats, selectedDifficulty);
+
 
         free(paragraph);
 
