@@ -495,9 +495,18 @@ int main() {
         return 1;
     }
 
+    FILE *lbFile = fopen("leaderboard.txt", "r");
+    if (!lbFile) {
+        lbFile = fopen("leaderboard.txt", "w");
+        CHECK_FILE_OP(lbFile, "Creating leaderboard.txt failed");
+        // Leaving it empty by default. 
+        fclose(lbFile);
+    }
+
+
     ParagraphCache cache;
-    loadParagraphs(file, &cache);
-    fclose(file);
+    loadParagraphs(newFile, &cache);
+    fclose(newFile);
 
     processAttempts(&cache, profile, difficulty, difficultyLevel);
 
