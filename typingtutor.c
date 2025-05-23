@@ -484,13 +484,38 @@ int main() {
     srand((unsigned int)time(NULL));
     FILE *file = fopen("paragraphs.txt", "r");
     if (!file) {
+        file = fopen("paragraphs.txt", "w");
+        CHECK_FILE_OP(file, "Creating paragraphs.txt failed");
+        fprintf(file, "One day after a heavy meal. It was sleeping under a tree.\n");
+        fprintf(file, "After a while, there came a mouse and it started to play on the lion.\n");
+        fprintf(file, "Suddenly the lion got up with anger and looked for those who disturbed its nice sleep.\n");
+        fprintf(file, "Then it saw a small mouse standing trembling with fear.\n");
+        fprintf(file, "The lion jumped on it and started to kill it. The mouse requested the lion to forgive it.\n");
+        fprintf(file, "The lion felt pity and left it. The mouse ran away.\n");
+        fprintf(file, "On another day, the lion was caught in a net by a hunter. The mouse came there and cut the net.\n");
+        fprintf(file, "Thus it escaped. There after, the mouse and the lion became friends.\n");
+        fprintf(file, "They lived happily in the forest afterwards.\n");
+        fclose(file);
+    }
+
+    FILE *newFile = fopen("paragraphs.txt", "r");
+    if (!newFile) {
         perror("Error opening file 'paragraphs.txt'");
         return 1;
     }
 
+    FILE *lbFile = fopen("leaderboard.txt", "r");
+    if (!lbFile) {
+        lbFile = fopen("leaderboard.txt", "w");
+        CHECK_FILE_OP(lbFile, "Creating leaderboard.txt failed");
+        // Leaving it empty by default. 
+        fclose(lbFile);
+    }
+
+
     ParagraphCache cache;
-    loadParagraphs(file, &cache);
-    fclose(file);
+    loadParagraphs(newFile, &cache);
+    fclose(newFile);
 
     processAttempts(&cache);
 
