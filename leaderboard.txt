@@ -1,7 +1,8 @@
-adithya-adee 290.61 58.12 96.49
-adithya-adee 288.24 57.65 96.08
+adithya-adee 290.61 58.12 96.49 Easy
+adithya-adee 288.24 57.65 96.08 Easy
 PritamP20 372.00 15.05 Medium
 PritamP20 356.00 97.75 Medium
 PritamP20 344.00 98.84 Medium
 PritamP20 272.00 35.29 Medium
 PritamP20 204.00 100.00 Medium
+p 114.00 22.80 88.51 Easy

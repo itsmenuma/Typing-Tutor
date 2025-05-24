@@ -1,0 +1,43 @@
+name: Build and Release C EXE
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install GCC via MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: mingw-w64-x86_64-gcc
+
+      - name: Compile C to EXE
+        shell: msys2 {0}
+        run: |
+          gcc typingtutor.c -o TypingTutor.exe
+
+      - name: Prepare output
+        run: |
+          mkdir dist_upload
+          move TypingTutor.exe dist_upload/
+
+      - name: Generate version string
+        id: version
+        run: echo "VERSION=auto-v$(date +'%Y%m%d')-${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.VERSION }}
+          name: "release ${{ env.VERSION }}"
+          artifacts: "dist_upload/TypingTutor.exe"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
