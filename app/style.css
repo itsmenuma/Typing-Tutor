@@ -1,0 +1,22 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  margin: 0;
+  padding: 2em;
+}
+h1 {
+  color: #333;
+}
+button {
+  padding: 0.5em 1.5em;
+  font-size: 1.1em;
+  margin-bottom: 1em;
+}
+pre {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 1em;
+  min-height: 200px;
+  white-space: pre-wrap;
+  font-size: 1.1em;
+}

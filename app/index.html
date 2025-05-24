@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Tutor Desktop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Typing Tutor</h1>
+  <div>
+    <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
+    <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
+    <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
+  </div>
+  <button onclick="runTypingTutor()">Start Typing Test</button>
+  <pre id="output"></pre>
+  <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
+  <button onclick="submitTyping()">Submit</button>
+  <div id="result"></div>
+  <script src="renderer.js"></script>
+</body>
+</html>
