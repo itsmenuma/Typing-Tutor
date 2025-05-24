@@ -83,6 +83,8 @@ void displayLeaderboard(const char *difficulty);
 void collectUserInput(char *input, size_t inputSize, double *elapsedTime);
 int isValidInput(const char *input);
 void processAttempts(ParagraphCache *cache);
+int min3(int a, int b, int c);
+int levenshtein(const char *s1, const char *s2, int caseInsensitive);
 
 // Load paragraphs into cache
 void loadParagraphs(FILE *file, ParagraphCache *cache) {
@@ -201,37 +203,62 @@ void displayUserSummary(UserProfile *profile) {
 
 // Calculate typing statistics
 void printTypingStats(double elapsedTime, const char *input, const char *correctText, Difficulty difficulty, TypingStats *stats) {
-    int correctCount = 0, wrongCount = 0;
-    int minLen = strlen(correctText) < strlen(input) ? strlen(correctText) : strlen(input);
-
-    for (int i = 0; i < minLen; i++) {
-        char c1 = correctText[i];
-        char c2 = input[i];
-        if (stats->caseInsensitive) {
-            c1 = tolower(c1);
-            c2 = tolower(c2);
-        }
-        if (c1 == c2) {
-            correctCount++;
-        } else {
-            wrongCount++;
-        }
-    }
-
-    int totalCharacters = minLen;
-    double accuracy = (double)correctCount / totalCharacters * 100;
+    int dist = levenshtein(correctText, input, stats->caseInsensitive);
+    int len = strlen(correctText);
+    double accuracy = ((double)(len - dist) / len) * 100.0;
+    if (accuracy < 0) accuracy = 0;
 
     if (elapsedTime < 0.01) elapsedTime = 0.01;
 
-    double cpm = (totalCharacters / elapsedTime) * 60.0;
+    double cpm = (strlen(input) / elapsedTime) * 60.0;
     double wpm = cpm / 5.0;
 
     stats->typingSpeed = cpm;
     stats->wordsPerMinute = wpm;
     stats->accuracy = accuracy;
-    stats->wrongChars = wrongCount;
+    stats->wrongChars = dist;
     strncpy(stats->paragraph, correctText, max_para_length);
 }
+int min3(int a, int b, int c) {
+    if (a <= b && a <= c) return a;
+    else if (b <= c) return b;
+    else return c;
+}
+
+int levenshtein(const char *s1, const char *s2, int caseInsensitive) {
+    int len1 = strlen(s1);
+    int len2 = strlen(s2);
+    int i, j;
+
+    int **dp = malloc((len1 + 1) * sizeof(int *));
+    for (i = 0; i <= len1; i++)
+        dp[i] = malloc((len2 + 1) * sizeof(int));
+
+    for (i = 0; i <= len1; i++) dp[i][0] = i;
+    for (j = 0; j <= len2; j++) dp[0][j] = j;
+
+    for (i = 1; i <= len1; i++) {
+        for (j = 1; j <= len2; j++) {
+            char c1 = s1[i - 1];
+            char c2 = s2[j - 1];
+            if (caseInsensitive) {
+                c1 = tolower(c1);
+                c2 = tolower(c2);
+            }
+            if (c1 == c2)
+                dp[i][j] = dp[i - 1][j - 1];
+            else
+                dp[i][j] = 1 + min3(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+    }
+
+    int distance = dp[len1][len2];
+    for (i = 0; i <= len1; i++) free(dp[i]);
+    free(dp);
+
+    return distance;
+}
+
 
 // Display previous attempts
 void displayPreviousAttempts(TypingStats attempts[], int numAttempts) {
