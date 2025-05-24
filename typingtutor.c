@@ -1,4 +1,3 @@
-// header files
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,13 +5,11 @@
 #include <ctype.h>
 #include <sys/time.h>
 
-// global declarations
 #define max_para_length 200
 #define max_file_line_length 200
 #define max_attempts 10
 #define max_leaderboard_entries 100
 
-// Define named constants for difficulty levels
 #define EASY_SPEED 5
 #define MEDIUM_SPEED 8
 #define HARD_SPEED 12
@@ -20,10 +17,8 @@
 #define MEDIUM_HARD_SPEED 12
 #define HARD_MAX_SPEED 16
 
-// Error handling macro
 #define CHECK_FILE_OP(f, msg) do { if (!(f)) { perror(msg); exit(EXIT_FAILURE); } } while (0)
 
-// structure to store user profile
 typedef struct {
     char username[50];
     double bestSpeed;
@@ -33,39 +28,34 @@ typedef struct {
     int totalAttempts;
 } UserProfile;
 
-// structure to store difficulty
 typedef struct {
     int easy;
     int medium;
     int hard;
 } Difficulty;
 
-// structure to store typing statistics
 typedef struct {
-    double typingSpeed;    // Characters per minute (CPM)
-    double wordsPerMinute; // Words per minute (WPM)
+    double typingSpeed;   
+    double wordsPerMinute; 
     double accuracy;
     int wrongChars;
     char paragraph[max_para_length];
     int caseInsensitive;
 } TypingStats;
 
-// structure to store leaderboard entries
 typedef struct {
     char username[50];
-    double typingSpeed;    // CPM
-    double wordsPerMinute; // WPM
+    double typingSpeed;   
+    double wordsPerMinute; 
     double accuracy;
-    char difficulty[10]; // Difficulty level (Easy, Medium, Hard)
+    char difficulty[20]; 
 } LeaderboardEntry;
 
-// structure to cache paragraphs
 typedef struct {
     char **paragraphs;
     int count;
 } ParagraphCache;
 
-// Function prototypes
 void loadParagraphs(FILE *file, ParagraphCache *cache);
 void freeParagraphCache(ParagraphCache *cache);
 char *getRandomParagraph(ParagraphCache *cache);
@@ -86,7 +76,6 @@ void processAttempts(ParagraphCache *cache);
 int min3(int a, int b, int c);
 int levenshtein(const char *s1, const char *s2, int caseInsensitive);
 
-// Load paragraphs into cache
 void loadParagraphs(FILE *file, ParagraphCache *cache) {
     char line[max_file_line_length];
     cache->count = 0;
@@ -112,17 +101,15 @@ void loadParagraphs(FILE *file, ParagraphCache *cache) {
     }
 }
 
-// Free paragraph cache
 void freeParagraphCache(ParagraphCache *cache) {
     for (int i = 0; i < cache->count; i++) {
         free(cache->paragraphs[i]);
-        cache->paragraphs[i] = NULL; // Prevent accidental reuse
+        cache->paragraphs[i] = NULL; 
     }
     free(cache->paragraphs);
-    cache->paragraphs = NULL; // Prevent accidental reuse
+    cache->paragraphs = NULL; 
 }
 
-// Get random paragraph from cache
 char *getRandomParagraph(ParagraphCache *cache) {
     if (cache->count == 0) {
         fprintf(stderr, "Error: No paragraphs available.\n");
@@ -131,7 +118,6 @@ char *getRandomParagraph(ParagraphCache *cache) {
     return cache->paragraphs[rand() % cache->count];
 }
 
-// Sanitize username
 void sanitizeUsername(char *username, size_t size) {
     for (size_t i = 0; i < strlen(username) && i < size - 1; i++) {
         if (!isalnum(username[i]) && username[i] != '-' && username[i] != '_') {
@@ -140,8 +126,6 @@ void sanitizeUsername(char *username, size_t size) {
     }
     username[size - 1] = '\0';
 }
-
-// Load user profile
 void loadUserProfile(UserProfile *profile) {
     printf("Enter your username: ");
     CHECK_FILE_OP(fgets(profile->username, sizeof(profile->username), stdin), "Error reading username");
@@ -164,12 +148,13 @@ void loadUserProfile(UserProfile *profile) {
     }
 }
 
-// Update user profile
 void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt) {
-    if (currentAttempt->typingSpeed > profile->bestSpeed)
+    if (currentAttempt->typingSpeed > profile->bestSpeed) {
         profile->bestSpeed = currentAttempt->typingSpeed;
-    if (currentAttempt->accuracy > profile->bestAccuracy)
+    }
+    if (currentAttempt->accuracy > profile->bestAccuracy) {
         profile->bestAccuracy = currentAttempt->accuracy;
+    }
 
     profile->totalSpeed += currentAttempt->typingSpeed;
     profile->totalAccuracy += currentAttempt->accuracy;
@@ -187,7 +172,6 @@ void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt) {
     }
 }
 
-// Display user summary
 void displayUserSummary(UserProfile *profile) {
     printf("\nUser Summary for %s:\n", profile->username);
     printf("--------------------------------------------------------\n");
@@ -201,7 +185,6 @@ void displayUserSummary(UserProfile *profile) {
     printf("--------------------------------------------------------\n");
 }
 
-// Calculate typing statistics
 void printTypingStats(double elapsedTime, const char *input, const char *correctText, Difficulty difficulty, TypingStats *stats) {
     int dist = levenshtein(correctText, input, stats->caseInsensitive);
     int len = strlen(correctText);
@@ -217,8 +200,10 @@ void printTypingStats(double elapsedTime, const char *input, const char *correct
     stats->wordsPerMinute = wpm;
     stats->accuracy = accuracy;
     stats->wrongChars = dist;
-    strncpy(stats->paragraph, correctText, max_para_length);
+    strncpy(stats->paragraph, correctText, max_para_length - 1);
+    stats->paragraph[max_para_length - 1] = '\0';
 }
+
 int min3(int a, int b, int c) {
     if (a <= b && a <= c) return a;
     else if (b <= c) return b;
@@ -259,22 +244,19 @@ int levenshtein(const char *s1, const char *s2, int caseInsensitive) {
     return distance;
 }
 
-
-// Display previous attempts
 void displayPreviousAttempts(TypingStats attempts[], int numAttempts) {
     printf("\nPrevious Attempts:\n");
-    printf("---------------------------------------------------------------------\n");
+    printf("-------------------------------------------------------------------------------\n");
     printf("| Attempt |  CPM  |  WPM  | Accuracy (%%) | Wrong Chars |\n");
-    printf("---------------------------------------------------------------------\n");
+    printf("-------------------------------------------------------------------------------\n");
     for (int i = 0; i < numAttempts; i++) {
         printf("|   %2d    | %6.2f | %6.2f |    %6.2f    |     %3d     |\n",
                i + 1, attempts[i].typingSpeed, attempts[i].wordsPerMinute,
                attempts[i].accuracy, attempts[i].wrongChars);
     }
-    printf("---------------------------------------------------------------------\n");
+    printf("-------------------------------------------------------------------------------\n");
 }
 
-// Prompt for difficulty
 void promptDifficulty(Difficulty *difficulty, char *difficultyLevel) {
     int choice;
     printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
@@ -305,7 +287,6 @@ void promptDifficulty(Difficulty *difficulty, char *difficultyLevel) {
     }
 }
 
-// Load leaderboard
 void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries) {
     FILE *file = fopen("leaderboard.txt", "r");
     if (!file) {
@@ -314,7 +295,7 @@ void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries) {
     }
 
     *numEntries = 0;
-    while (fscanf(file, "%49s %lf %lf %lf %9s",
+    while (fscanf(file, "%49s %lf %lf %lf %19s",
                   leaderboard[*numEntries].username,
                   &leaderboard[*numEntries].typingSpeed,
                   &leaderboard[*numEntries].wordsPerMinute,
@@ -326,7 +307,6 @@ void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries) {
     fclose(file);
 }
 
-// Save leaderboard
 void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries) {
     FILE *file = fopen("leaderboard.txt", "w");
     if (!file) {
@@ -342,18 +322,19 @@ void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries) {
     fclose(file);
 }
 
-// Update leaderboard
 void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty) {
     LeaderboardEntry leaderboard[max_leaderboard_entries];
     int numEntries;
     loadLeaderboard(leaderboard, &numEntries);
 
     LeaderboardEntry newEntry;
-    strncpy(newEntry.username, profile->username, sizeof(newEntry.username));
+    strncpy(newEntry.username, profile->username, sizeof(newEntry.username) - 1);
+    newEntry.username[sizeof(newEntry.username) - 1] = '\0';
     newEntry.typingSpeed = currentAttempt->typingSpeed;
     newEntry.wordsPerMinute = currentAttempt->wordsPerMinute;
     newEntry.accuracy = currentAttempt->accuracy;
-    strncpy(newEntry.difficulty, difficulty, sizeof(newEntry.difficulty));
+    strncpy(newEntry.difficulty, difficulty, sizeof(newEntry.difficulty) - 1);
+    newEntry.difficulty[sizeof(newEntry.difficulty) - 1] = '\0';
 
     if (numEntries < max_leaderboard_entries) {
         leaderboard[numEntries++] = newEntry;
@@ -383,16 +364,15 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
     saveLeaderboard(leaderboard, numEntries);
 }
 
-// Display leaderboard
 void displayLeaderboard(const char *difficulty) {
     LeaderboardEntry leaderboard[max_leaderboard_entries];
     int numEntries;
     loadLeaderboard(leaderboard, &numEntries);
 
     printf("\nLeaderboard for %s Difficulty:\n", difficulty);
-    printf("-------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------\n");
     printf("| Rank | Username       | CPM    | WPM    | Accuracy (%%) |\n");
-    printf("-------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------\n");
 
     int rank = 1;
     for (int i = 0; i < numEntries; i++) {
@@ -404,13 +384,13 @@ void displayLeaderboard(const char *difficulty) {
             if (rank > 10) break;
         }
     }
+
     if (rank == 1) {
-        printf("|      No entries for this difficulty level yet          |\n");
+        printf("|            No entries for this difficulty level yet                 |\n");
     }
-    printf("-------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------\n");
 }
 
-// Collect user input
 void collectUserInput(char *input, size_t inputSize, double *elapsedTime) {
     struct timeval startTime, endTime;
     gettimeofday(&startTime, NULL);
@@ -421,7 +401,6 @@ void collectUserInput(char *input, size_t inputSize, double *elapsedTime) {
     *elapsedTime = (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_usec - startTime.tv_usec) / 1000000.0;
 }
 
-// Validate input
 int isValidInput(const char *input) {
     if (strlen(input) == 0) return 0;
     int isWhitespaceOnly = 1;
@@ -434,7 +413,6 @@ int isValidInput(const char *input) {
     return !isWhitespaceOnly;
 }
 
-// Process typing attempts
 void processAttempts(ParagraphCache *cache) {
     printf("Welcome to Typing Tutor!\n");
     UserProfile profile;
@@ -442,7 +420,7 @@ void processAttempts(ParagraphCache *cache) {
 
     char input[max_para_length];
     Difficulty difficulty;
-    char difficultyLevel[10];
+    char difficultyLevel[20];
     TypingStats attempts[max_attempts];
     int numAttempts = 0;
     int caseChoice;
@@ -505,8 +483,6 @@ void processAttempts(ParagraphCache *cache) {
         }
     }
 }
-
-// Main function
 int main() {
     srand((unsigned int)time(NULL));
     FILE *file = fopen("paragraphs.txt", "r");
@@ -523,10 +499,10 @@ int main() {
         fprintf(file, "Thus it escaped. There after, the mouse and the lion became friends.\n");
         fprintf(file, "They lived happily in the forest afterwards.\n");
         fclose(file);
+        file = fopen("paragraphs.txt", "r");
     }
 
-    FILE *newFile = fopen("paragraphs.txt", "r");
-    if (!newFile) {
+    if (!file) {
         perror("Error opening file 'paragraphs.txt'");
         return 1;
     }
@@ -535,14 +511,14 @@ int main() {
     if (!lbFile) {
         lbFile = fopen("leaderboard.txt", "w");
         CHECK_FILE_OP(lbFile, "Creating leaderboard.txt failed");
-        // Leaving it empty by default. 
+        fclose(lbFile);
+    } else {
         fclose(lbFile);
     }
 
-
     ParagraphCache cache;
-    loadParagraphs(newFile, &cache);
-    fclose(newFile);
+    loadParagraphs(file, &cache);
+    fclose(file);
 
     processAttempts(&cache);
 
