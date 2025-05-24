@@ -82,7 +82,9 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
 void displayLeaderboard(const char *difficulty);
 void collectUserInput(char *input, size_t inputSize, double *elapsedTime);
 int isValidInput(const char *input);
-void processAttempts(ParagraphCache *cache);
+
+void processAttempts(ParagraphCache *cache, UserProfile profile, Difficulty difficulty, char difficultyLevel[]);
+
 int min3(int a, int b, int c);
 int levenshtein(const char *s1, const char *s2, int caseInsensitive);
 
@@ -433,24 +435,21 @@ int isValidInput(const char *input) {
     }
     return !isWhitespaceOnly;
 }
-
 // Process typing attempts
-void processAttempts(ParagraphCache *cache) {
-    printf("Welcome to Typing Tutor!\n");
-    UserProfile profile;
-    loadUserProfile(&profile);
-
+void processAttempts(ParagraphCache *cache, UserProfile profile, Difficulty difficulty, char difficultyLevel[]) {
+ 
     char input[max_para_length];
-    Difficulty difficulty;
-    char difficultyLevel[10];
     TypingStats attempts[max_attempts];
     int numAttempts = 0;
     int caseChoice;
 
-    promptDifficulty(&difficulty, difficultyLevel);
-
     while (numAttempts < max_attempts) {
         char *currentPara = getRandomParagraph(cache);
+        if (!currentPara) {
+            printf("Error: No paragraph available.\n");
+            break;
+        }
+
         printf("Enable case-insensitive typing? (1-YES, 0-NO): ");
         if (scanf("%d", &caseChoice) != 1 || (caseChoice != 0 && caseChoice != 1)) {
             printf("Invalid input. Please enter 0 or 1.\n");
@@ -488,7 +487,7 @@ void processAttempts(ParagraphCache *cache) {
         printf("--------------------------------------------------------\n");
 
         printf("\nDo you want to continue? (y/n): ");
-        char choice[3];
+        char choice[10];
         CHECK_FILE_OP(fgets(choice, sizeof(choice), stdin), "Error reading choice");
         if (tolower(choice[0]) != 'y') {
             displayPreviousAttempts(attempts, numAttempts);
@@ -508,26 +507,20 @@ void processAttempts(ParagraphCache *cache) {
 
 // Main function
 int main() {
-    srand((unsigned int)time(NULL));
-    FILE *file = fopen("paragraphs.txt", "r");
-    if (!file) {
-        file = fopen("paragraphs.txt", "w");
-        CHECK_FILE_OP(file, "Creating paragraphs.txt failed");
-        fprintf(file, "One day after a heavy meal. It was sleeping under a tree.\n");
-        fprintf(file, "After a while, there came a mouse and it started to play on the lion.\n");
-        fprintf(file, "Suddenly the lion got up with anger and looked for those who disturbed its nice sleep.\n");
-        fprintf(file, "Then it saw a small mouse standing trembling with fear.\n");
-        fprintf(file, "The lion jumped on it and started to kill it. The mouse requested the lion to forgive it.\n");
-        fprintf(file, "The lion felt pity and left it. The mouse ran away.\n");
-        fprintf(file, "On another day, the lion was caught in a net by a hunter. The mouse came there and cut the net.\n");
-        fprintf(file, "Thus it escaped. There after, the mouse and the lion became friends.\n");
-        fprintf(file, "They lived happily in the forest afterwards.\n");
-        fclose(file);
-    }
+    srand((unsigned int)time(NULL));  
+    printf("Welcome to Typing Tutor!\n");
+    UserProfile profile;
+    loadUserProfile(&profile);
+    char difficultyLevel[10];
+    Difficulty difficulty;
+    promptDifficulty(&difficulty, difficultyLevel);
 
-    FILE *newFile = fopen("paragraphs.txt", "r");
-    if (!newFile) {
-        perror("Error opening file 'paragraphs.txt'");
+    char fileName[20];
+    snprintf(fileName, sizeof(fileName), "%s.txt", difficultyLevel);
+
+    FILE *file = fopen(fileName, "r");
+    if (!file) {
+        perror("Error opening file");
         return 1;
     }
 
@@ -541,10 +534,10 @@ int main() {
 
 
     ParagraphCache cache;
-    loadParagraphs(newFile, &cache);
-    fclose(newFile);
+    loadParagraphs(file, &cache);
+    fclose(file);
 
-    processAttempts(&cache);
+    processAttempts(&cache, profile, difficulty, difficultyLevel);
 
     freeParagraphCache(&cache);
     return 0;
