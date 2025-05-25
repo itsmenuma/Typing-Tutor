@@ -325,17 +325,7 @@ void generateCertificate(UserProfile *profile, TypingStats *currentAttempt) {
         printf("Required: Speed ≥ %.2f cpm, Accuracy ≥ %.2f%%\n", MIN_SPEED, MIN_ACCURACY);
     }
 }
-//function to process attempts
-void processAttempts(FILE* file) 
-{
-    srand((unsigned int)time(NULL));//seed value is set to unsigned int time
-    
-    printf("Welcome to Typing Tutor!\n");//welcome message
-    UserProfile profile;   // Initialize user profile and stats
-    loadUserProfile(&profile); //  Load user profile from file
-    //local variable declarations
 
-}
 // Load leaderboard from file
 void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries)
 {
