@@ -94,6 +94,69 @@ input[type="checkbox"] {
   margin-right: 0.4em;
   accent-color: #3e497a;
 }
+/* Style for the leaderboard */
+#leaderboard {
+  background: #f4f6fb;
+  border: 2px solid #3e497a;
+  border-radius: 12px;
+  padding: 1.2em 1em;
+  margin-top: 1.5em;
+  margin-bottom: 1em;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  font-size: 1.08em;
+  color: #232946;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+  display: none; /* default, shown by JS */
+}
+
+/* Style for the username input */
+#username {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px solid #3e497a;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 15px;
+  font-size: 1em;
+  color: #232946;
+  background: #f4f6fb;
+  outline: none;
+  transition: border-color 0.3s ease;
+  display: block; /* Ensure it takes up the full width */
+}
+
+#username:focus {
+  border-color: #232946;
+  box-shadow: 0 0 5px rgba(44, 62, 80, 0.3);
+}
+
+label[for="username"] {
+  display: block; /* Ensure the label is above the input */
+  margin-bottom: 5px; /* Add some space between the label and input */
+}
+
+#leaderboard .highlight {
+  background-color: #d1ffe6;
+  color: #1b4d3e;
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 0.2em 0.5em;
+  display: inline-block;
+}
+
+#leaderboard .your-result {
+  background: #d1ffe6;
+  color: #1b4d3e;
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 0.2em 0.5em;
+  display: inline-block;
+}
+
 @media (max-width: 600px) {
   #main-container {
     padding: 1em;

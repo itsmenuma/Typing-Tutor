@@ -8,21 +8,32 @@
 <body>
   <div id="main-container">
     <h1>Typing Tutor</h1>
-    <div style="margin-bottom: 10px;">
-      <h2 style="display:inline; margin-right:20px;">Customize Test</h2>
-      <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
-      <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
-      <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
-      <label style="margin-left: 20px;">
-        <input type="checkbox" id="caseSensitive" checked>
-        Case Sensitive
-      </label>
+    
+    <!-- Move name input to top -->
+    <div style="margin-bottom: 20px;">
+        <label for="username" style="font-weight: 600; display: block; margin-bottom: 5px;">Name:</label>
+        <input type="text" id="username" placeholder="Enter your name" maxlength="20" 
+               style="margin-bottom: 10px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 100%; box-sizing: border-box;">
     </div>
+
+    <div style="margin-bottom: 10px;">
+        <h2 style="display:inline; margin-right:20px;">Customize Test</h2>
+        <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
+        <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
+        <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
+        <label style="margin-left: 20px;">
+            <input type="checkbox" id="caseSensitive" checked>
+            Case Sensitive
+        </label>
+    </div>
+
     <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
     <pre id="output"></pre>
     <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
-    <button onclick="submitTyping()">Submit</button>
+    <button id="submitBtn" onclick="submitTyping()">Submit</button>
     <div id="result"></div>
+    <button id="leaderboardBtn" onclick="showLeaderboard()">Leaderboard</button>
+    <pre id="leaderboard" style="display:none"></pre>
   </div>
   <script src="renderer.js"></script>
 </body>

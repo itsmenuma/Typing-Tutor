@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <sys/time.h>
 #include <strings.h> // for strncasecmp
+#include <math.h>
 
 // global declarations
 #define max_para_length 200
@@ -474,6 +475,7 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
     int numEntries;
     loadLeaderboard(leaderboard, &numEntries);
 
+    // Prepare new entry
     LeaderboardEntry newEntry;
     strncpy(newEntry.username, profile->username, sizeof(newEntry.username));
     newEntry.typingSpeed = currentAttempt->typingSpeed;
@@ -481,27 +483,51 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
     newEntry.accuracy = currentAttempt->accuracy;
     strncpy(newEntry.difficulty, difficulty, sizeof(newEntry.difficulty));
 
-    if (numEntries < max_leaderboard_entries)
+    int replaced = 0;
+    // Check for existing entry for this user and difficulty
+    for (int i = 0; i < numEntries; i++)
     {
-        leaderboard[numEntries++] = newEntry;
-    }
-    else
-    {
-        int worstIndex = 0;
-        for (int i = 1; i < numEntries; i++)
+        if (strcmp(leaderboard[i].username, newEntry.username) == 0 &&
+            strcmp(leaderboard[i].difficulty, newEntry.difficulty) == 0)
         {
-            if (leaderboard[i].typingSpeed < leaderboard[worstIndex].typingSpeed &&
-                strcmp(leaderboard[i].difficulty, difficulty) == 0)
+            // Replace only if new score is better
+            if (newEntry.typingSpeed > leaderboard[i].typingSpeed)
             {
-                worstIndex = i;
+                leaderboard[i] = newEntry;
             }
+            replaced = 1;
+            break;
         }
-        if (newEntry.typingSpeed > leaderboard[worstIndex].typingSpeed)
+    }
+    // If not found, add new entry
+    if (!replaced)
+    {
+        if (numEntries < max_leaderboard_entries)
         {
-            leaderboard[worstIndex] = newEntry;
+            leaderboard[numEntries++] = newEntry;
+        }
+        else
+        {
+            // If full, replace the worst for this difficulty if new is better
+            int worstIndex = -1;
+            double worstScore = 1e9;
+            for (int i = 0; i < numEntries; i++)
+            {
+                if (strcmp(leaderboard[i].difficulty, newEntry.difficulty) == 0 &&
+                    leaderboard[i].typingSpeed < worstScore)
+                {
+                    worstScore = leaderboard[i].typingSpeed;
+                    worstIndex = i;
+                }
+            }
+            if (worstIndex != -1 && newEntry.typingSpeed > leaderboard[worstIndex].typingSpeed)
+            {
+                leaderboard[worstIndex] = newEntry;
+            }
         }
     }
 
+    // Sort leaderboard for this difficulty by typingSpeed descending
     for (int i = 0; i < numEntries - 1; i++)
     {
         for (int j = i + 1; j < numEntries; j++)
@@ -531,19 +557,21 @@ void displayLeaderboard(const char *difficulty)
     printf("-------------------------------------------------------------\n");
 
     int rank = 1;
-    for (int i = 0; i < numEntries; i++)
+    int shown = 0;
+    for (int i = 0; i < numEntries && rank <= 5; i++)
     {
         if (strcmp(leaderboard[i].difficulty, difficulty) == 0)
         {
+            // Print leaderboard entry (no current user highlight in this context)
             printf("| %4d | %-14s | %6.2f | %6.2f | %10.2f |\n",
-                   rank++, leaderboard[i].username,
+                   rank, leaderboard[i].username,
                    leaderboard[i].typingSpeed, leaderboard[i].wordsPerMinute,
                    leaderboard[i].accuracy);
-            if (rank > 10)
-                break;
+            rank++;
+            shown++;
         }
     }
-    if (rank == 1)
+    if (shown == 0)
     {
         printf("|      No entries for this difficulty level yet          |\n");
     }
@@ -708,6 +736,82 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // Handle --get-leaderboard: print the leaderboard and exit
+    if ((argc >= 2 && strcmp(argv[1], "--get-leaderboard") == 0))
+    {
+        const char *difficulty = (argc >= 3) ? argv[2] : "Easy";
+        const char *currentUser = (argc >= 4) ? argv[3] : NULL;
+        double userCPM = (argc >= 5) ? atof(argv[4]) : -1;
+        double userWPM = (argc >= 6) ? atof(argv[5]) : -1;
+        double userAccuracy = (argc >= 7) ? atof(argv[6]) : -1;
+
+        LeaderboardEntry leaderboard[max_leaderboard_entries];
+        int numEntries;
+        loadLeaderboard(leaderboard, &numEntries);
+
+        printf("\nLeaderboard for %s Difficulty:\n", difficulty);
+        printf("-------------------------------------------------------------\n");
+        printf("| Rank | Username       | CPM    | WPM    | Accuracy (%%) |\n");
+        printf("-------------------------------------------------------------\n");
+
+        int rank = 1;
+        int shown = 0;
+        for (int i = 0; i < numEntries && rank <= 5; i++)
+        {
+            if (strcmp(leaderboard[i].difficulty, difficulty) == 0)
+            {
+                // Highlight the current user
+                int isCurrentUser = (currentUser != NULL &&
+                                     strcmp(leaderboard[i].username, currentUser) == 0);
+                printf("| %4d | %-14s%s | %6.2f | %6.2f | %10.2f |\n",
+                       rank, leaderboard[i].username, isCurrentUser ? " *" : "",
+                       leaderboard[i].typingSpeed, leaderboard[i].wordsPerMinute,
+                       leaderboard[i].accuracy);
+                rank++;
+                shown++;
+            }
+        }
+        if (shown == 0)
+        {
+            printf("|      No entries for this difficulty level yet          |\n");
+        }
+        printf("-------------------------------------------------------------\n");
+
+        // Show the current user's latest result if not in top 5
+        if (currentUser && userCPM > 0 && userWPM > 0 && userAccuracy > 0)
+        {
+            int found = 0;
+            int userRank = 1;
+            for (int i = 0; i < numEntries; i++)
+            {
+                if (strcmp(leaderboard[i].difficulty, difficulty) == 0)
+                {
+                    // Compare all fields for accuracy (allowing for floating point error)
+                    if (
+                        strcmp(leaderboard[i].username, currentUser) == 0 &&
+                        fabs(leaderboard[i].typingSpeed - userCPM) < 0.01 &&
+                        fabs(leaderboard[i].wordsPerMinute - userWPM) < 0.01 &&
+                        fabs(leaderboard[i].accuracy - userAccuracy) < 0.01)
+                    {
+                        if (userRank > 5)
+                        {
+                            printf("\nYour Result:\n");
+                            printf("| %4d | %-14s | %6.2f | %6.2f | %10.2f |\n",
+                                   userRank, leaderboard[i].username,
+                                   leaderboard[i].typingSpeed, leaderboard[i].wordsPerMinute,
+                                   leaderboard[i].accuracy);
+                        }
+                        found = 1;
+                        break;
+                    }
+                    userRank++;
+                }
+            }
+        }
+
+        return 0;
+    }
+
     if (argc < 7)
     {
         printf("Usage: %s <username> <difficulty> <caseInsensitive> <elapsedTime> <userInput> <paragraph>\n", argv[0]);
@@ -766,6 +870,22 @@ int main(int argc, char *argv[])
     {
         printf("Performance: Needs Improvement. Try to type faster!\n");
     }
+
+    FILE *f = fopen("leaderboard.txt", "a");
+    if (f)
+    {
+        fprintf(f, "%s\t%.2f CPM\t%.2f%% Accuracy\n", username, stats.typingSpeed, stats.accuracy);
+        fclose(f);
+    }
+
+    UserProfile profile;
+    strncpy(profile.username, username, sizeof(profile.username));
+    profile.bestSpeed = stats.typingSpeed;
+    profile.bestAccuracy = stats.accuracy;
+    profile.totalSpeed = stats.typingSpeed;
+    profile.totalAccuracy = stats.accuracy;
+    profile.totalAttempts = 1;
+    updateLeaderboard(&profile, &stats, difficultyLevel);
 
     return 0;
 }
