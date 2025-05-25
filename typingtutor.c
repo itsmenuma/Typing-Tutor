@@ -5,6 +5,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <sys/time.h>
+#include <strings.h> // for strncasecmp
 
 // global declarations
 #define max_para_length 200
@@ -13,12 +14,12 @@
 #define max_leaderboard_entries 100
 
 // Define named constants for difficulty levels
-#define EASY_SPEED 5
-#define MEDIUM_SPEED 8
-#define HARD_SPEED 12
-#define EASY_MEDIUM_SPEED 8
-#define MEDIUM_HARD_SPEED 12
-#define HARD_MAX_SPEED 16
+#define EASY_SPEED 30
+#define MEDIUM_SPEED 50
+#define HARD_SPEED 90
+#define EASY_MEDIUM_SPEED 40
+#define MEDIUM_HARD_SPEED 70
+#define HARD_MAX_SPEED 120
 
 // Error handling macro
 #define CHECK_FILE_OP(f, msg)   \
@@ -80,6 +81,7 @@ typedef struct
 
 // Function prototypes
 void loadParagraphs(FILE *file, ParagraphCache *cache);
+void loadParagraphsForDifficulty(FILE *file, ParagraphCache *cache, const char *difficultyLevel);
 void freeParagraphCache(ParagraphCache *cache);
 char *getRandomParagraph(ParagraphCache *cache);
 void sanitizeUsername(char *username, size_t size);
@@ -98,6 +100,8 @@ int isValidInput(const char *input);
 void processAttempts(ParagraphCache *cache);
 int min3(int a, int b, int c);
 int levenshtein(const char *s1, const char *s2, int caseInsensitive);
+void toLowerStr(char *dst, const char *src);
+void trim_newline(char *str);
 
 // Load paragraphs into cache
 void loadParagraphs(FILE *file, ParagraphCache *cache)
@@ -127,6 +131,61 @@ void loadParagraphs(FILE *file, ParagraphCache *cache)
             cache->paragraphs[index] = strdup(line);
             CHECK_FILE_OP(cache->paragraphs[index], "Memory allocation error for paragraph");
             index++;
+        }
+    }
+}
+
+// Load paragraphs for specific difficulty into cache
+void loadParagraphsForDifficulty(FILE *file, ParagraphCache *cache, const char *difficultyLevel)
+{
+    char line[max_file_line_length];
+    int inSection = 0;
+    int count = 0;
+    char marker[16];
+    snprintf(marker, sizeof(marker), "#%s", difficultyLevel);
+
+    // First pass: count paragraphs
+    while (fgets(line, sizeof(line), file))
+    {
+        trim_newline(line);
+        if (line[0] == '#')
+        {
+            inSection = (strcasecmp(line, marker) == 0);
+            continue;
+        }
+        if (inSection && strlen(line) > 0 && line[0] != '#')
+        {
+            count++;
+        }
+    }
+
+    if (count == 0)
+    {
+        cache->paragraphs = NULL;
+        cache->count = 0;
+        return;
+    }
+
+    cache->paragraphs = malloc(count * sizeof(char *));
+    cache->count = count;
+
+    // Second pass: store paragraphs
+    fseek(file, 0, SEEK_SET);
+    inSection = 0;
+    int index = 0;
+    while (fgets(line, sizeof(line), file))
+    {
+        trim_newline(line);
+        if (line[0] == '#')
+        {
+            inSection = (strcasecmp(line, marker) == 0);
+            continue;
+        }
+        if (inSection && strlen(line) > 0 && line[0] != '#')
+        {
+            cache->paragraphs[index++] = strdup(line);
+            if (index >= count)
+                break;
         }
     }
 }
@@ -601,12 +660,33 @@ void processAttempts(ParagraphCache *cache)
     }
 }
 
+// Convert string to lowercase
+void toLowerStr(char *dst, const char *src)
+{
+    while (*src)
+    {
+        *dst++ = tolower((unsigned char)*src++);
+    }
+    *dst = '\0';
+}
+
+// Trim newline characters from string
+void trim_newline(char *str)
+{
+    size_t len = strlen(str);
+    while (len > 0 && (str[len - 1] == '\n' || str[len - 1] == '\r'))
+    {
+        str[--len] = '\0';
+    }
+}
+
 // Main function
 int main(int argc, char *argv[])
 {
-    // If called with --get-paragraph, just print a random paragraph and exit
-    if (argc == 2 && strcmp(argv[1], "--get-paragraph") == 0)
+    // Handle --get-paragraph: print a random paragraph for the given difficulty and exit
+    if (argc == 3 && strcmp(argv[1], "--get-paragraph") == 0)
     {
+        const char *difficultyLevel = argv[2];
         srand((unsigned int)time(NULL));
         FILE *file = fopen("paragraphs.txt", "r");
         if (!file)
@@ -614,15 +694,20 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Error: Could not open paragraphs.txt\n");
             return 1;
         }
-        ParagraphCache cache;
-        loadParagraphs(file, &cache);
+        ParagraphCache cache = {0};
+        loadParagraphsForDifficulty(file, &cache, difficultyLevel);
         fclose(file);
+        if (cache.count == 0)
+        {
+            fprintf(stderr, "No paragraphs found for difficulty: %s\n", difficultyLevel);
+            return 1;
+        }
         char *para = getRandomParagraph(&cache);
         printf("Random Paragraph:\n%s\n", para);
         freeParagraphCache(&cache);
         return 0;
     }
-    // Usage: typingtutor.exe <username> <difficulty> <caseInsensitive> <elapsedTime> <userInput> <paragraph>
+
     if (argc < 7)
     {
         printf("Usage: %s <username> <difficulty> <caseInsensitive> <elapsedTime> <userInput> <paragraph>\n", argv[0]);
@@ -634,12 +719,10 @@ int main(int argc, char *argv[])
     int caseInsensitive = atoi(argv[3]);
     double elapsedTime = atof(argv[4]);
     const char *userInput = argv[5];
-    const char *para = argv[6]; // Use the provided paragraph
+    const char *para = argv[6];
 
-    // Print the paragraph for the frontend to display
     printf("Random Paragraph:\n%s\n", para);
 
-    // Calculate stats
     Difficulty difficulty;
     if (strcmp(difficultyLevel, "Easy") == 0)
         difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
@@ -649,7 +732,17 @@ int main(int argc, char *argv[])
         difficulty = (Difficulty){MEDIUM_HARD_SPEED, HARD_MAX_SPEED, HARD_SPEED + 4};
 
     TypingStats stats = {.caseInsensitive = caseInsensitive};
-    printTypingStats(elapsedTime, userInput, para, difficulty, &stats);
+    char userInputCopy[max_para_length], paraCopy[max_para_length];
+    if (caseInsensitive)
+    {
+        toLowerStr(userInputCopy, userInput);
+        toLowerStr(paraCopy, para);
+        printTypingStats(elapsedTime, userInputCopy, paraCopy, difficulty, &stats);
+    }
+    else
+    {
+        printTypingStats(elapsedTime, userInput, para, difficulty, &stats);
+    }
 
     printf("\nTyping Stats:\n");
     printf("CPM: %.2f\n", stats.typingSpeed);
@@ -657,6 +750,22 @@ int main(int argc, char *argv[])
     printf("Accuracy: %.2f%%\n", stats.accuracy);
     printf("Wrong Characters: %d\n", stats.wrongChars);
 
-    // Do NOT call freeParagraphCache here, as cache is not used in this mode
+    if (stats.typingSpeed >= difficulty.hard)
+    {
+        printf("Performance: Excellent! You passed the Hard threshold.\n");
+    }
+    else if (stats.typingSpeed >= difficulty.medium)
+    {
+        printf("Performance: Good! You passed the Medium threshold.\n");
+    }
+    else if (stats.typingSpeed >= difficulty.easy)
+    {
+        printf("Performance: Fair! You passed the Easy threshold.\n");
+    }
+    else
+    {
+        printf("Performance: Needs Improvement. Try to type faster!\n");
+    }
+
     return 0;
 }

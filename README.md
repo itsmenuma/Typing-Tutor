@@ -1,24 +1,35 @@
-# 🧠 Typing-Tutor ⌨️
+# 🧠 Typing Tutor Desktop ⌨️
 
-> *Boost your typing speed and accuracy — one paragraph at a time!*
+> _Boost your typing speed and accuracy — one paragraph at a time!_
 
-Typing Tutor is a **console-based C application** designed to help users improve their **typing speed**, **accuracy**, and **confidence**. It selects **random paragraphs** from a file and gives real-time feedback on performance.
+Typing Tutor Desktop is a **modern desktop application** (Electron + C backend) designed to help users improve their **typing speed**, **accuracy**, and **confidence**. It features a beautiful UI, customizable difficulty, and real-time performance feedback.
 
 ---
 
 ## ✨ Features
 
-* 📄 **Random Paragraph Selection**
-  Each typing session presents a new, randomly chosen paragraph from a text file.
+- 📄 **Random Paragraph Selection**
 
-* ⚡ **Typing Speed & Accuracy Analysis**
-  Measures your typing speed in **Characters Per Minute (CPM)** and calculates **accuracy** as a percentage.
+  - Each typing session presents a new, randomly chosen paragraph from a categorized text file.
 
-* 🎯 **Difficulty Levels**
-  Choose from **Easy**, **Medium**, or **Hard** to match your skill level.
+- ⚡ **Typing Speed & Accuracy Analysis**
 
-* 📊 **Track Performance**
-  Stores up to **10 previous attempts** with full stats for each session.
+  - Measures your typing speed in **Characters Per Minute (CPM)** and calculates **accuracy** as a percentage.
+
+- 🎯 **Difficulty Levels**
+
+  - Choose from **Easy**, **Medium**, or **Hard**. Each level has its own set of paragraphs and stricter speed thresholds.
+
+- 🖥️ **Modern Desktop UI**
+
+  - Built with Electron and styled for a clean, responsive, and attractive look.
+
+- 📝 **Case Sensitivity Option**
+
+  - Toggle case sensitivity for a more challenging typing test.
+
+- 📊 **Performance Feedback**
+  - Get instant feedback on your speed, accuracy, and performance level after each attempt.
 
 ---
 
@@ -26,33 +37,48 @@ Typing Tutor is a **console-based C application** designed to help users improve
 
 ### ✅ Prerequisites
 
-* A **C compiler** (e.g., `gcc`)
-* A text file named **`paragraphs.txt`** containing paragraphs for typing practice
+- **Node.js** and **npm** (for Electron)
+- A **C compiler** (e.g., `gcc`) to build the backend
+- A text file named **`paragraphs.txt`** in the `build/` folder, containing paragraphs for typing practice, formatted as:
+
+```
+#Easy ...easy paragraphs... #Medium ...medium paragraphs... #Hard ...hard paragraphs...
+
+```
 
 ### 🛠️ How to Use
 
-1. **Choose a Difficulty Level**
-   Select from Easy 🟢, Medium 🟡, or Hard 🔴 when prompted.
+1. **Build the C Backend**
+ - Compile `typingtutor.c` to `typingtutor.exe` and place it in the `build/` folder.
 
-2. **Start Typing**
-   A random paragraph will be displayed. Type it **as fast and accurately as possible**.
+2. **Prepare Paragraphs**
+ - Edit `build/paragraphs.txt` with your own categorized paragraphs.
 
-3. **Get Your Stats**
-   Once done, you'll see your:
+3. **Start the App**
+ - In the `app/` folder, run:
+   ```
+   cd app
+   npm install
+   npm start
+   ```
 
-   * 🕒 Typing speed (CPM)
-   * 🌟 Accuracy (%)
-   * ❌ Number of wrong characters
+4. **Choose Difficulty & Options**
+ - Select Easy, Medium, or Hard and toggle case sensitivity.
 
-4. **Continue or Exit**
-   You can try again with a new paragraph (up to 10 attempts) or exit the program.
+5. **Start Typing**
+ - Click "Start Typing Test" to get a random paragraph. Type it as fast and accurately as possible.
+
+6. **Get Your Stats**
+ - See your CPM, WPM, accuracy, and performance feedback instantly.
 
 ---
 
 ## 📁 Files
 
-* `typing_tutor.c` – Main source code
-* `paragraphs.txt` – Text file containing paragraphs for practice
+* `app/` – Electron frontend (HTML, CSS, JS)
+* `build/typingtutor.exe` – Compiled C backend
+* `build/paragraphs.txt` – Paragraphs for practice (categorized)
+* `typingtutor.c` – Main C source code
 
 ---
 
@@ -72,13 +98,13 @@ If you find a bug or have a feature suggestion, please [open an issue](https://g
 
 ## 📜 License
 
-Licensed under the [MIT License](LICENSE) 🗑️
+Licensed under the [MIT License](LICENSE)
 
 ---
 
 ## 🙌 Acknowledgments
 
-Inspired by traditional typing tutor tools used in schools and online platforms to help improve typing skills.
+Inspired by traditional typing tutor tools and modern desktop app design.
 
 ---
 

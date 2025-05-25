@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const { spawn } = require('child_process');
+const { execFile } = require('child_process');
 const path = require('path');
 
 function createWindow () {
@@ -17,21 +17,15 @@ function createWindow () {
 app.whenReady().then(createWindow);
 
 ipcMain.handle('run-typing-tutor', async (event, args) => {
-  console.log("Received run-typing-tutor event");
   return new Promise((resolve, reject) => {
-    const proc = spawn('../build/typingtutor.exe', args);
-
-    let output = '';
-    proc.stdout.on('data', (data) => {
-      output += data.toString();
-    });
-
-    proc.stderr.on('data', (data) => {
-      output += data.toString();
-    });
-
-    proc.on('close', (code) => {
-      resolve(output);
-    });
+    execFile(
+      path.join(__dirname, '../build/typingtutor.exe'),
+      args,
+      { cwd: path.join(__dirname, '../build') }, // <--- Set working directory!
+      (error, stdout, stderr) => {
+        if (error) return reject(stderr || error.message);
+        resolve(stdout);
+      }
+    );
   });
 });

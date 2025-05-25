@@ -1,22 +1,112 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f7f7f7;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #f0f4f9 0%, #e0e7ef 100%);
   margin: 0;
-  padding: 2em;
+  padding: 0;
 }
 h1 {
-  color: #333;
+  color: #232946;
+  margin-top: 32px;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 2.5em;
+  letter-spacing: 2px;
+}
+h2 {
+  color: #3e497a;
+  font-size: 1.3em;
+  margin-bottom: 0.5em;
+  letter-spacing: 1px;
+}
+#main-container {
+  max-width: 800px;
+  margin: 32px auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.12);
+  padding: 2.5em 2em 2em 2em;
 }
 button {
-  padding: 0.5em 1.5em;
+  padding: 0.6em 2em;
   font-size: 1.1em;
+  margin: 0.5em 0.5em 0.5em 0;
+  border-radius: 8px;
+  border: none;
+  background: #232946;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+}
+button:disabled {
+  background: #bfc8d7;
+  color: #fff;
+  cursor: not-allowed;
+}
+button:hover:not(:disabled), button:focus:not(:disabled) {
+  background: #3e497a;
+  transform: translateY(-2px) scale(1.04);
+}
+label {
+  font-size: 1.05em;
+  color: #232946;
+  margin-left: 1em;
+  vertical-align: middle;
+}
+pre, textarea {
+  background: #f4f6fb;
+  border: 1.5px solid #c3cbe5;
+  border-radius: 10px;
+  padding: 1.2em;
+  min-height: 140px;
+  font-size: 1.15em;
+  color: #232946;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 1.2em;
+  margin-top: 0.5em;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px;
+}
+#result {
+  margin-top: 1.2em;
+  background: #e9f6ec;
+  border-left: 5px solid #4ad991;
+  padding: 1em 1.5em;
+  border-radius: 8px;
+  color: #1b4d3e;
+  font-size: 1.1em;
+  min-height: 40px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.04);
+}
+#output {
   margin-bottom: 1em;
 }
-pre {
-  background: #fff;
-  border: 1px solid #ccc;
-  padding: 1em;
-  min-height: 200px;
-  white-space: pre-wrap;
-  font-size: 1.1em;
+input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 0.4em;
+  accent-color: #3e497a;
+}
+@media (max-width: 600px) {
+  #main-container {
+    padding: 1em;
+  }
+  h1 {
+    font-size: 2em;
+  }
+  button {
+    font-size: 1em;
+    padding: 0.5em 1em;
+  }
+  pre, textarea {
+    font-size: 1em;
+    padding: 0.7em;
+  }
 }
