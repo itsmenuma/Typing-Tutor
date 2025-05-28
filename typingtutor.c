@@ -88,17 +88,11 @@ char *getRandomParagraph(ParagraphCache *cache);
 void sanitizeUsername(char *username, size_t size);
 void loadUserProfile(UserProfile *profile);
 void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt);
-void displayUserSummary(UserProfile *profile);
 void printTypingStats(double elapsedTime, const char *input, const char *correctText, Difficulty difficulty, TypingStats *stats);
-void displayPreviousAttempts(TypingStats attempts[], int numAttempts);
-void promptDifficulty(Difficulty *difficulty, char *difficultyLevel);
 void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries);
 void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries);
 void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty);
 void displayLeaderboard(const char *difficulty);
-void collectUserInput(char *input, size_t inputSize, double *elapsedTime);
-int isValidInput(const char *input);
-void processAttempts(ParagraphCache *cache);
 int min3(int a, int b, int c);
 int levenshtein(const char *s1, const char *s2, int caseInsensitive);
 void toLowerStr(char *dst, const char *src);
@@ -283,22 +277,6 @@ void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt)
     }
 }
 
-// Display user summary
-void displayUserSummary(UserProfile *profile)
-{
-    printf("\nUser Summary for %s:\n", profile->username);
-    printf("--------------------------------------------------------\n");
-    printf("Best Typing Speed: %.2f cpm\n", profile->bestSpeed);
-    printf("Best Accuracy: %.2f%%\n", profile->bestAccuracy);
-    if (profile->totalAttempts > 0)
-    {
-        printf("Average Typing Speed: %.2f cpm\n", profile->totalSpeed / profile->totalAttempts);
-        printf("Average Accuracy: %.2f%%\n", profile->totalAccuracy / profile->totalAttempts);
-    }
-    printf("Total Attempts: %d\n", profile->totalAttempts);
-    printf("--------------------------------------------------------\n");
-}
-
 // Calculate typing statistics
 void printTypingStats(double elapsedTime, const char *input, const char *correctText, Difficulty difficulty, TypingStats *stats)
 {
@@ -369,59 +347,6 @@ int levenshtein(const char *s1, const char *s2, int caseInsensitive)
     free(dp);
 
     return distance;
-}
-
-// Display previous attempts
-void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
-{
-    printf("\nPrevious Attempts:\n");
-    printf("---------------------------------------------------------------------\n");
-    printf("| Attempt |  CPM  |  WPM  | Accuracy (%%) | Wrong Chars |\n");
-    printf("---------------------------------------------------------------------\n");
-    for (int i = 0; i < numAttempts; i++)
-    {
-        printf("|   %2d    | %6.2f | %6.2f |    %6.2f    |     %3d     |\n",
-               i + 1, attempts[i].typingSpeed, attempts[i].wordsPerMinute,
-               attempts[i].accuracy, attempts[i].wrongChars);
-    }
-    printf("---------------------------------------------------------------------\n");
-}
-
-// Prompt for difficulty
-void promptDifficulty(Difficulty *difficulty, char *difficultyLevel)
-{
-    int choice;
-    printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
-    while (1)
-    {
-        printf("Enter your choice: ");
-        if (scanf("%d", &choice) != 1 || choice < 1 || choice > 3)
-        {
-            printf("Invalid input. Please enter a number between 1 and 3.\n");
-            while (getchar() != '\n')
-                ;
-            continue;
-        }
-        while (getchar() != '\n')
-            ;
-        break;
-    }
-
-    switch (choice)
-    {
-    case 1:
-        *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
-        strcpy(difficultyLevel, "Easy");
-        break;
-    case 2:
-        *difficulty = (Difficulty){EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED, HARD_MAX_SPEED};
-        strcpy(difficultyLevel, "Medium");
-        break;
-    case 3:
-        *difficulty = (Difficulty){MEDIUM_HARD_SPEED, HARD_MAX_SPEED, HARD_SPEED + 4};
-        strcpy(difficultyLevel, "Hard");
-        break;
-    }
 }
 
 // Load leaderboard
@@ -576,116 +501,6 @@ void displayLeaderboard(const char *difficulty)
         printf("|      No entries for this difficulty level yet          |\n");
     }
     printf("-------------------------------------------------------------\n");
-}
-
-// Collect user input
-void collectUserInput(char *input, size_t inputSize, double *elapsedTime)
-{
-    struct timeval startTime, endTime;
-    gettimeofday(&startTime, NULL);
-    printf("Your input: \n");
-    fflush(stdout);
-    CHECK_FILE_OP(fgets(input, inputSize, stdin), "Error reading input");
-    gettimeofday(&endTime, NULL);
-    *elapsedTime = (endTime.tv_sec - startTime.tv_sec) + (endTime.tv_usec - startTime.tv_usec) / 1000000.0;
-}
-
-// Validate input
-int isValidInput(const char *input)
-{
-    if (strlen(input) == 0)
-        return 0;
-    int isWhitespaceOnly = 1;
-    for (size_t i = 0; i < strlen(input); i++)
-    {
-        if (!isspace((unsigned char)input[i]))
-        {
-            isWhitespaceOnly = 0;
-            break;
-        }
-    }
-    return !isWhitespaceOnly;
-}
-
-// Process typing attempts
-void processAttempts(ParagraphCache *cache)
-{
-    printf("Welcome to Typing Tutor!\n");
-    UserProfile profile;
-    loadUserProfile(&profile);
-
-    char input[max_para_length];
-    Difficulty difficulty;
-    char difficultyLevel[10];
-    TypingStats attempts[max_attempts];
-    int numAttempts = 0;
-    int caseChoice;
-
-    promptDifficulty(&difficulty, difficultyLevel);
-
-    while (numAttempts < max_attempts)
-    {
-        char *currentPara = getRandomParagraph(cache);
-        printf("Enable case-insensitive typing? (1-YES, 0-NO): ");
-        if (scanf("%d", &caseChoice) != 1 || (caseChoice != 0 && caseChoice != 1))
-        {
-            printf("Invalid input. Please enter 0 or 1.\n");
-            while (getchar() != '\n')
-                ;
-            continue;
-        }
-        while (getchar() != '\n')
-            ;
-
-        printf("\nType the following paragraph:\n%s\n", currentPara);
-        double elapsedTime;
-        collectUserInput(input, sizeof(input), &elapsedTime);
-
-        size_t len = strlen(input);
-        if (len > 0 && input[len - 1] == '\n')
-            input[len - 1] = '\0';
-
-        if (!isValidInput(input))
-        {
-            printf("Input cannot be empty or contain only whitespace. Please try again.\n");
-            continue;
-        }
-
-        TypingStats currentAttempt = {.caseInsensitive = caseChoice};
-        printTypingStats(elapsedTime, input, currentPara, difficulty, &currentAttempt);
-        attempts[numAttempts++] = currentAttempt;
-
-        updateUserProfile(&profile, &currentAttempt);
-        updateLeaderboard(&profile, &currentAttempt, difficultyLevel);
-
-        printf("\nTyping Stats for Current Attempt:\n");
-        printf("--------------------------------------------------------\n");
-        printf("Characters Per Minute (CPM): %.2f\n", currentAttempt.typingSpeed);
-        printf("Words Per Minute (WPM): %.2f\n", currentAttempt.wordsPerMinute);
-        printf("Accuracy: %.2f%%\n", currentAttempt.accuracy);
-        printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
-        printf("Time taken: %.2f seconds\n", elapsedTime);
-        printf("--------------------------------------------------------\n");
-
-        printf("\nDo you want to continue? (y/n): ");
-        char choice[3];
-        CHECK_FILE_OP(fgets(choice, sizeof(choice), stdin), "Error reading choice");
-        if (tolower(choice[0]) != 'y')
-        {
-            displayPreviousAttempts(attempts, numAttempts);
-            displayUserSummary(&profile);
-
-            printf("\nWould you like to see the leaderboard for %s difficulty? (y/n): ", difficultyLevel);
-            CHECK_FILE_OP(fgets(choice, sizeof(choice), stdin), "Error reading choice");
-            if (tolower(choice[0]) == 'y')
-            {
-                displayLeaderboard(difficultyLevel);
-            }
-
-            printf("\nThanks for using Typing Tutor!\n");
-            break;
-        }
-    }
 }
 
 // Convert string to lowercase

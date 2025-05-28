@@ -80,22 +80,44 @@ window.submitTyping = async function() {
     const statsMatch = result.match(/Typing Stats:\n([\s\S]*)/);
     document.getElementById('result').innerText = statsMatch ? statsMatch[1].trim() : result;
     document.getElementById('submitBtn').disabled = true; // Disable after submit
+
+    // After updating the leaderboard data, refresh the leaderboard UI:
+    showLeaderboard();
 };
 
 // Update showLeaderboard to use stored username
 window.showLeaderboard = async function() {
-    if (!currentUser) {
-        if (!setUsername()) return;
-    }
-
+    // Use empty string if currentUser is not set
+    const user = currentUser || "";
     const result = await ipcRenderer.invoke('run-typing-tutor', [
         '--get-leaderboard',
         selectedDifficulty || "Easy",
-        currentUser
+        user
     ]);
-
-    document.getElementById('leaderboard').innerHTML = result;
-    document.getElementById('leaderboard').style.display = 'block';
+    const lines = result.trim().split('\n');
+    let leaderboardHTML = '';
+    let userHighlighted = false;
+    let count = 0;
+    for (let i = 0; i < lines.length && count < 10; i++) {
+        const line = lines[i];
+        if (line.includes(currentUser)) {
+            leaderboardHTML += `<span class="your-result">${line}</span>\n`;
+            userHighlighted = true;
+        } else {
+            leaderboardHTML += line + '\n';
+        }
+        count++;
+    }
+    // If user not in top 10, show their rank below
+    if (!userHighlighted) {
+        for (let i = 10; i < lines.length; i++) {
+            if (lines[i].includes(currentUser)) {
+                leaderboardHTML += `\n<span class="your-result">Your Rank: ${i+1}: ${lines[i]}</span>\n`;
+                break;
+            }
+        }
+    }
+    document.getElementById('leaderboard').innerHTML = leaderboardHTML;
 };
 
 document.getElementById('userInput').addEventListener('keydown', function(e) {
