@@ -1,0 +1,31 @@
+#Easy
+The cat sat on the mat.
+I like to play games.
+She runs very fast.
+It is a sunny day.
+Dogs bark at night.
+Books are fun to read.
+The sun rises in the east.
+He has a red ball.
+We went to the park.
+Fish swim in water.
+#Medium
+After a while, there came a mouse and it started to play on the lion.
+The lion felt pity and left it. The mouse ran away.
+Suddenly the lion got up with anger and looked for those who disturbed its nice sleep.
+Then it saw a small mouse standing trembling with fear.
+The mouse requested the lion to forgive it.
+They lived happily in the forest afterwards.
+The children played outside until it got dark.
+My sister baked a chocolate cake for my birthday.
+The teacher explained the lesson clearly to the students.
+We watched a movie together last weekend.
+#Hard
+On another day, the lion was caught in a net by a hunter. The mouse came there and cut the net.
+Thus it escaped. There after, the mouse and the lion became friends.
+Despite the heavy rain, the determined marathon runners continued their race through the winding city streets.
+The scientist meticulously recorded every observation, ensuring that no detail was overlooked in the complex experiment.
+As the orchestra played the symphony, the audience sat in awe, captivated by the intricate harmonies and dynamic rhythms.
+The ancient manuscript, written in a language long forgotten, posed a significant challenge to even the most skilled linguists.
+While technological advancements have greatly improved communication, they have also introduced new ethical dilemmas for society to consider.
+The mountain climbers faced numerous obstacles, including treacherous weather and steep cliffs, but their perseverance led them to the summit.
