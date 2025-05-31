@@ -95,7 +95,7 @@ void promptDifficulty(Difficulty *difficulty, char *difficultyLevel);
 void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries);
 void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries);
 void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty);
-void displayLeaderboard(const char *difficulty, const char *currentUser);
+void displayLeaderboard(const char *difficulty);
 void collectUserInput(char *input, size_t inputSize, double *elapsedTime);
 int isValidInput(const char *input);
 void processAttempts(ParagraphCache *cache);
@@ -551,24 +551,20 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
 }
 
 
-// ANSI color codes
-#define COLOR_RESET   "\033[0m"
-#define COLOR_RED     "\033[1;31m"
-#define COLOR_GREEN   "\033[1;32m"
-#define COLOR_YELLOW  "\033[1;33m"
+
 
 
 // Display leaderboard
-void displayLeaderboard(const char *difficulty, const char *currentUser)
+void displayLeaderboard(const char *difficulty)
 {
     LeaderboardEntry leaderboard[max_leaderboard_entries];
     int numEntries;
     loadLeaderboard(leaderboard, &numEntries);
 
-    printf("\n" COLOR_YELLOW "Leaderboard for %s Difficulty:\n" COLOR_RESET, difficulty);
-    printf(COLOR_YELLOW "-------------------------------------------------------------\n" COLOR_RESET);
-    printf(COLOR_YELLOW "| Rank | Username       | CPM    | WPM    | Accuracy (%%) |\n" COLOR_RESET);
-    printf(COLOR_YELLOW "-------------------------------------------------------------\n" COLOR_RESET);
+    printf("\n" "Leaderboard for %s Difficulty:\n" , difficulty);
+    printf( "-------------------------------------------------------------\n" );
+    printf( "| Rank | Username       | CPM    | WPM    | Accuracy (%%) |\n" );
+    printf( "-------------------------------------------------------------\n" );
 
     int rank = 1;
     int shown = 0;
@@ -587,7 +583,7 @@ void displayLeaderboard(const char *difficulty, const char *currentUser)
     }
     if (shown == 0)
     {
-        printf(COLOR_YELLOW "|      No entries for this difficulty level yet          |\n" COLOR_RESET);
+        printf( "|      No entries for this difficulty level yet          |\n" );
     }
     printf("-------------------------------------------------------------\n");
 }
@@ -693,7 +689,7 @@ void processAttempts(ParagraphCache *cache)
             CHECK_FILE_OP(fgets(choice, sizeof(choice), stdin), "Error reading choice");
             if (tolower(choice[0]) == 'y')
             {
-                displayLeaderboard(difficultyLevel, profile.username);
+                displayLeaderboard(difficultyLevel);
             }
 
             printf("\nThanks for using Typing Tutor!\n");
