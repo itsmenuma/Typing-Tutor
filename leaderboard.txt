@@ -1,2 +1,3 @@
-adithya-adee 290.61 58.12 96.49 Easy
-adithya-adee 288.24 57.65 96.08 Easy
+cidesh 185.58 37.12 100.00 Easy
+cidesh 76.61 15.32 0.00 Medium
+cidesh 160.67 32.13 100.00 Hard

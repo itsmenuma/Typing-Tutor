@@ -64,7 +64,7 @@ typedef struct
 void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries);
 void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries);
 void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty);
-void displayLeaderboard(const char *difficulty);
+void displayLeaderboard(const char *difficulty , const char *currentUsername);
 
 // Load user profile from file or initialize if not found
 void loadUserProfile(UserProfile *profile)
@@ -103,13 +103,18 @@ void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt)
     profile->totalAccuracy += currentAttempt->accuracy;
     profile->totalAttempts++;
 
+    double avgSpeed = profile->totalSpeed / profile->totalAttempts;
+    double avgAccuracy = profile->totalAccuracy / profile->totalAttempts;
+
+
     char filename[100];
     snprintf(filename, sizeof(filename), "%s_profile.txt", profile->username);
     FILE *f = fopen(filename, "w");
     if (f)
     {
         fprintf(f, "%.2lf %.2lf %.2lf %.2lf %d", profile->bestSpeed, profile->bestAccuracy,
-                profile->totalSpeed, profile->totalAccuracy, profile->totalAttempts);
+        avgSpeed, avgAccuracy, profile->totalAttempts);
+
         fclose(f);
     }
     else
@@ -375,32 +380,51 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
     newEntry.accuracy = currentAttempt->accuracy;
     strncpy(newEntry.difficulty, difficulty, sizeof(newEntry.difficulty));
 
-    // Add the new entry to the leaderboard
-    if (numEntries < max_leaderboard_entries)
+    // Check if user already exists for the same difficulty
+    int existingIndex = -1;
+    for (int i = 0; i < numEntries; i++)
     {
+        if (strcmp(leaderboard[i].username, profile->username) == 0 &&
+            strcmp(leaderboard[i].difficulty, difficulty) == 0)
+        {
+            existingIndex = i;
+            break;
+        }
+    }
+
+    if (existingIndex != -1)
+    {
+        // Update the existing user's entry
+        leaderboard[existingIndex] = newEntry;
+    }
+    else if (numEntries < max_leaderboard_entries)
+    {
+        // Add new entry
         leaderboard[numEntries++] = newEntry;
     }
     else
     {
-        // If leaderboard is full, replace the worst entry if the current one is better
-        int worstIndex = 0;
-        for (int i = 1; i < numEntries; i++)
+        // Leaderboard is full, consider replacing a lower-ranked user with the same difficulty
+        int worstIndex = -1;
+        for (int i = 0; i < numEntries; i++)
         {
-            if (leaderboard[i].typingSpeed < leaderboard[worstIndex].typingSpeed &&
-                strcmp(leaderboard[i].difficulty, difficulty) == 0)
+            if (strcmp(leaderboard[i].difficulty, difficulty) == 0)
             {
-                worstIndex = i;
+                if (worstIndex == -1 || leaderboard[i].typingSpeed < leaderboard[worstIndex].typingSpeed)
+                {
+                    worstIndex = i;
+                }
             }
         }
 
-        if (newEntry.typingSpeed > leaderboard[worstIndex].typingSpeed ||
-            numEntries < max_leaderboard_entries)
+        if (worstIndex != -1 && newEntry.typingSpeed > leaderboard[worstIndex].typingSpeed)
         {
             leaderboard[worstIndex] = newEntry;
         }
+        // Else discard (not better than worst)
     }
 
-    // Sort the leaderboard by typing speed (descending order) for each difficulty
+    // Sort leaderboard by typingSpeed (descending) per difficulty
     for (int i = 0; i < numEntries - 1; i++)
     {
         for (int j = i + 1; j < numEntries; j++)
@@ -419,8 +443,16 @@ void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const 
     saveLeaderboard(leaderboard, numEntries);
 }
 
+
+// ANSI color codes
+#define COLOR_RESET   "\033[0m"
+#define COLOR_RED     "\033[1;31m"
+#define COLOR_GREEN   "\033[1;32m"
+#define COLOR_YELLOW  "\033[1;33m"
+
+
 // Display leaderboard for a specific difficulty
-void displayLeaderboard(const char *difficulty)
+void displayLeaderboard(const char *difficulty, const char *currentUsername)
 {
     LeaderboardEntry leaderboard[max_leaderboard_entries];
     int numEntries;
@@ -428,21 +460,29 @@ void displayLeaderboard(const char *difficulty)
     // Load the leaderboard
     loadLeaderboard(leaderboard, &numEntries);
 
-    printf("\nLeaderboard for %s Difficulty:\n", difficulty);
-    printf("-------------------------------------------------------------\n");
-    printf("| Rank | Username       | CPM    | WPM    | Accuracy (%%) |\n");
-    printf("-------------------------------------------------------------\n");
+    printf("\n" COLOR_YELLOW "Leaderboard for %s Difficulty:\n" COLOR_RESET, difficulty);
+    printf(COLOR_YELLOW "-------------------------------------------------------------\n" COLOR_RESET);
+    printf(COLOR_YELLOW "| Rank | Username       | CPM    | WPM    | Accuracy (%%) |\n" COLOR_RESET);
+    printf(COLOR_YELLOW "-------------------------------------------------------------\n" COLOR_RESET);
 
     int rank = 1;
     for (int i = 0; i < numEntries; i++)
     {
         if (strcmp(leaderboard[i].difficulty, difficulty) == 0)
         {
-            printf("| %4d | %-14s | %6.2f | %6.2f | %10.2f |\n",
+            const char *color;
+            if (strcmp(leaderboard[i].username, currentUsername) == 0)
+                color = COLOR_RED;  // Current user in red
+            else
+                color = COLOR_GREEN;  // Others in green
+
+            printf("%s| %4d | %-14s | %6.2f | %6.2f | %10.2f |%s\n",
+                   color,
                    rank++, leaderboard[i].username,
                    leaderboard[i].typingSpeed,
                    leaderboard[i].wordsPerMinute,
-                   leaderboard[i].accuracy);
+                   leaderboard[i].accuracy,
+                   COLOR_RESET);
 
             if (rank > 10)
                 break; // Only show top 10 entries
@@ -451,12 +491,11 @@ void displayLeaderboard(const char *difficulty)
 
     if (rank == 1)
     {
-        printf("|      No entries for this difficulty level yet          |\n");
+        printf(COLOR_YELLOW "|      No entries for this difficulty level yet          |\n" COLOR_RESET);
     }
 
-    printf("-------------------------------------------------------------\n");
+    printf(COLOR_YELLOW "-------------------------------------------------------------\n" COLOR_RESET);
 }
-
 // function to process attempts
 void processAttempts(FILE *file)
 {
@@ -584,7 +623,7 @@ void processAttempts(FILE *file)
             printf("\nWould you like to see the leaderboard for %s difficulty? (y/n): ", difficultyLevel);
             if (fgets(choice, sizeof(choice), stdin) && tolower(choice[0]) == 'y')
             {
-                displayLeaderboard(difficultyLevel);
+                displayLeaderboard(difficultyLevel, profile.username);
             }
 
             printf("\nThanks for using Typing Tutor!\n");
