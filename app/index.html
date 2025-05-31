@@ -3,38 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <title>Typing Tutor Desktop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="main-container">
     <h1>Typing Tutor</h1>
-    
-    <!-- Move name input to top -->
-    <div style="margin-bottom: 20px;">
-        <label for="username" style="font-weight: 600; display: block; margin-bottom: 5px;">Name:</label>
-        <input type="text" id="username" placeholder="Enter your name" maxlength="20" 
-               style="margin-bottom: 10px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 100%; box-sizing: border-box;">
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-test" onclick="showTab('test')">Typing Test</button>
+      <button class="tab-btn" id="tab-leaderboard" onclick="showTab('leaderboard')">Leaderboard</button>
     </div>
-
-    <div style="margin-bottom: 10px;">
-        <h2 style="display:inline; margin-right:20px;">Customize Test</h2>
-        <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
-        <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
-        <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
-        <label style="margin-left: 20px;">
-            <input type="checkbox" id="caseSensitive" checked>
-            Case Sensitive
+    <div id="tab-content-test">
+      <div class="input-group">
+        <label for="username">Name:</label>
+        <input type="text" id="username" placeholder="Enter your name" maxlength="20">
+      </div>
+      <div class="difficulty-section">
+        <h2>Customize Test</h2>
+        <div class="difficulty-buttons">
+          <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
+          <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
+          <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
+        </div>
+        <label class="case-label">
+          <input type="checkbox" id="caseSensitive" checked>
+          Case Sensitive
         </label>
+      </div>
+      <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
+      <pre id="output"></pre>
+      <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
+      <button id="submitBtn" onclick="submitTyping()">Submit</button>
+      <div id="result"></div>
     </div>
-
-    <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
-    <pre id="output"></pre>
-    <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
-    <button id="submitBtn" onclick="submitTyping()">Submit</button>
-    <div id="result"></div>
-    <button id="leaderboardBtn" onclick="showLeaderboard()">Leaderboard</button>
-    <pre id="leaderboard" style="display:none"></pre>
+    <div id="tab-content-leaderboard" style="display:none;">
+      <h2>Leaderboard</h2>
+      <pre id="leaderboard"></pre>
+    </div>
   </div>
   <script src="renderer.js"></script>
+  <script>
+    function showTab(tab) {
+      document.getElementById('tab-content-test').style.display = tab === 'test' ? '' : 'none';
+      document.getElementById('tab-content-leaderboard').style.display = tab === 'leaderboard' ? '' : 'none';
+      document.getElementById('tab-test').classList.toggle('active', tab === 'test');
+      document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
+      if(tab === 'leaderboard') showLeaderboard();
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      showTab('test');
+      showLeaderboard(); 
+    });
+  </script>
 </body>
 </html>
