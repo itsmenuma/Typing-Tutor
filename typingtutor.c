@@ -65,17 +65,11 @@ char *getRandomParagraph(ParagraphCache *cache);
 void sanitizeUsername(char *username, size_t size);
 void loadUserProfile(UserProfile *profile);
 void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt);
-void displayUserSummary(UserProfile *profile);
 void printTypingStats(double elapsedTime, const char *input, const char *correctText, Difficulty difficulty, TypingStats *stats);
-void displayPreviousAttempts(TypingStats attempts[], int numAttempts);
-void promptDifficulty(Difficulty *difficulty, char *difficultyLevel);
 void loadLeaderboard(LeaderboardEntry leaderboard[], int *numEntries);
 void saveLeaderboard(LeaderboardEntry leaderboard[], int numEntries);
 void updateLeaderboard(UserProfile *profile, TypingStats *currentAttempt, const char *difficulty);
 void displayLeaderboard(const char *difficulty);
-void collectUserInput(char *input, size_t inputSize, double *elapsedTime);
-int isValidInput(const char *input);
-void processAttempts(ParagraphCache *cache);
 int min3(int a, int b, int c);
 int levenshtein(const char *s1, const char *s2, int caseInsensitive);
 void toLowerStr(char *dst, const char *src);
@@ -241,6 +235,9 @@ void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt)
     }
 }
 
+// Calculate typing statistics
+void printTypingStats(double elapsedTime, const char *input, const char *correctText, Difficulty difficulty, TypingStats *stats)
+{
 void displayUserSummary(UserProfile *profile) {
     printf("\nUser Summary for %s:\n", profile->username);
     printf("--------------------------------------------------------\n");
@@ -311,59 +308,6 @@ int levenshtein(const char *s1, const char *s2, int caseInsensitive) {
     free(dp);
 
     return distance;
-}
-
-// Display previous attempts
-void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
-{
-    printf("\nPrevious Attempts:\n");
-    printf("---------------------------------------------------------------------\n");
-    printf("| Attempt |  CPM  |  WPM  | Accuracy (%%) | Wrong Chars |\n");
-    printf("---------------------------------------------------------------------\n");
-    for (int i = 0; i < numAttempts; i++)
-    {
-        printf("|   %2d    | %6.2f | %6.2f |    %6.2f    |     %3d     |\n",
-               i + 1, attempts[i].typingSpeed, attempts[i].wordsPerMinute,
-               attempts[i].accuracy, attempts[i].wrongChars);
-    }
-    printf("---------------------------------------------------------------------\n");
-}
-
-// Prompt for difficulty
-void promptDifficulty(Difficulty *difficulty, char *difficultyLevel)
-{
-    int choice;
-    printf("Select difficulty level:\n1. Easy\n2. Medium\n3. Hard\n");
-    while (1)
-    {
-        printf("Enter your choice: ");
-        if (scanf("%d", &choice) != 1 || choice < 1 || choice > 3)
-        {
-            printf("Invalid input. Please enter a number between 1 and 3.\n");
-            while (getchar() != '\n')
-                ;
-            continue;
-        }
-        while (getchar() != '\n')
-            ;
-        break;
-    }
-
-    switch (choice)
-    {
-    case 1:
-        *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
-        strcpy(difficultyLevel, "Easy");
-        break;
-    case 2:
-        *difficulty = (Difficulty){EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED, HARD_MAX_SPEED};
-        strcpy(difficultyLevel, "Medium");
-        break;
-    case 3:
-        *difficulty = (Difficulty){MEDIUM_HARD_SPEED, HARD_MAX_SPEED, HARD_SPEED + 4};
-        strcpy(difficultyLevel, "Hard");
-        break;
-    }
 }
 
 // Load leaderboard
