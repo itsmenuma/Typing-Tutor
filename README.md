@@ -66,7 +66,7 @@ Another hard paragraph to test your typing skills!
    git clone https://github.com/itsmenuma/Typing-Tutor.git
    ```
 
-   Incase you want to clone your forked repository: (Replace <your_username> with your username)
+    - Incase you want to clone your forked repository: (Replace <your_username> with your username)
    ```bash
    git clone https://github.com/<your_username>/Typing-Tutor.git
    ```
@@ -97,20 +97,20 @@ Another hard paragraph to test your typing skills!
    ```
 
 7. **Enter Your Name**
-   - Enter your name in the input field before starting the test.
+    - Enter your name in the input field before starting the test.
 
 8. **Choose Difficulty & Options**
-   - Select Easy, Medium, or Hard and toggle case sensitivity.
+    - Select Easy, Medium, or Hard and toggle case sensitivity.
 
 9. **Start Typing**
-   - Click "Start Typing Test" to get a random paragraph. Type it as fast and accurately as possible.
+    - Click "Start Typing Test" to get a random paragraph. Type it as fast and accurately as possible.
 
 10. **Get Your Stats**
-   - See your CPM, WPM, accuracy, and performance feedback instantly.
+    - See your CPM, WPM, accuracy, and performance feedback instantly.
 
 11. **View the Leaderboard**
-   - Click "Leaderboard" to see the top 5 scores for the selected difficulty.
-   - Your name will be highlighted if you are on the leaderboard.
+    - Click "Leaderboard" to see the top 5 scores for the selected difficulty.
+    - Your name will be highlighted if you are on the leaderboard.
 
 ---
 
