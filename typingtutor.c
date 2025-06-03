@@ -74,6 +74,8 @@ int min3(int a, int b, int c);
 int levenshtein(const char *s1, const char *s2, int caseInsensitive);
 void toLowerStr(char *dst, const char *src);
 void trim_newline(char *str);
+void promptDifficulty(Difficulty *difficulty, char *difficultyLevel);
+void displayPreviousAttempts(TypingStats attempts[], int numAttempts);
 
 // Load paragraphs into cache
 void loadParagraphs(FILE *file, ParagraphCache *cache)
@@ -236,8 +238,6 @@ void updateUserProfile(UserProfile *profile, TypingStats *currentAttempt)
 }
 
 // Calculate typing statistics
-void printTypingStats(double elapsedTime, const char *input, const char *correctText, Difficulty difficulty, TypingStats *stats)
-{
 void displayUserSummary(UserProfile *profile) {
     printf("\nUser Summary for %s:\n", profile->username);
     printf("--------------------------------------------------------\n");
@@ -481,6 +481,54 @@ int isValidInput(const char *input) {
         }
     }
     return !isWhitespaceOnly;
+}
+
+void promptDifficulty(Difficulty *difficulty, char *difficultyLevel)
+{
+    int choice;
+    printf("Select difficulty:\n");
+    printf("1. Easy\n2. Medium\n3. Hard\n");
+    printf("Enter your choice (1-3): ");
+    while (scanf("%d", &choice) != 1 || choice < 1 || choice > 3)
+    {
+        printf("Invalid input. Please enter 1, 2, or 3: ");
+        while (getchar() != '\n');
+    }
+    while (getchar() != '\n');
+
+    switch (choice)
+    {
+        case 1:
+            *difficulty = (Difficulty){EASY_SPEED, EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED};
+            strcpy(difficultyLevel, "Easy");
+            break;
+        case 2:
+            *difficulty = (Difficulty){EASY_MEDIUM_SPEED, MEDIUM_HARD_SPEED, HARD_MAX_SPEED};
+            strcpy(difficultyLevel, "Medium");
+            break;
+        case 3:
+            *difficulty = (Difficulty){MEDIUM_HARD_SPEED, HARD_MAX_SPEED, HARD_SPEED + 4};
+            strcpy(difficultyLevel, "Hard");
+            break;
+    }
+}
+
+void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
+{
+    printf("\nPrevious Attempts:\n");
+    printf("--------------------------------------------------------\n");
+    printf("| Attempt | CPM    | WPM    | Accuracy (%%) | Wrong Chars |\n");
+    printf("--------------------------------------------------------\n");
+    for (int i = 0; i < numAttempts; i++)
+    {
+        printf("| %7d | %6.2f | %6.2f | %11.2f | %11d |\n",
+               i + 1,
+               attempts[i].typingSpeed,
+               attempts[i].wordsPerMinute,
+               attempts[i].accuracy,
+               attempts[i].wrongChars);
+    }
+    printf("--------------------------------------------------------\n");
 }
 
 void processAttempts(ParagraphCache *cache)
