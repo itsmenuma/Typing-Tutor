@@ -57,61 +57,27 @@ This is a hard paragraph. It contains challenging words and longer sentences.
 
 Another hard paragraph to test your typing skills!
 ```
+---
 
+## ⚙️ Project Structure
 
-### 🛠️ Installation and Usage
-
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/itsmenuma/Typing-Tutor.git
-   ```
-
-    - Incase you want to clone your forked repository: (Replace <your_username> with your username)
-   ```bash
-   git clone https://github.com/<your_username>/Typing-Tutor.git
-   ```
-
-2. **Navigate to the `app` Directory:**
-   ```bash
-   cd Typing-Tutor/app
-   ```
-
-3. **Install Node Dependencies:**
-   ```bash
-   npm install
-   ```
-
-4. **Build the C Backend (Windows):**
-    Open a developer command prompt and navigate to the `Typing-Tutor` directory.  Then execute:
-   ```bash
-   gcc typingtutor.c -o build/typingtutor.exe
-   ```
-   This will create the `typingtutor.exe` file needed by the Electron app.  (Adjust for other OSes - see the `.github/workflows/release.yml` for a Windows example).
-
-5. **Prepare Paragraphs:**
-   Create the `build` directory if it doesn't exist, and create and edit the `build/paragraphs.txt` file with your own categorized paragraphs (see the example above).
-
-6. **Run the App:**
-   ```bash
-   npm start
-   ```
-
-7. **Enter Your Name**
-    - Enter your name in the input field before starting the test.
-
-8. **Choose Difficulty & Options**
-    - Select Easy, Medium, or Hard and toggle case sensitivity.
-
-9. **Start Typing**
-    - Click "Start Typing Test" to get a random paragraph. Type it as fast and accurately as possible.
-
-10. **Get Your Stats**
-    - See your CPM, WPM, accuracy, and performance feedback instantly.
-
-11. **View the Leaderboard**
-    - Click "Leaderboard" to see the top 5 scores for the selected difficulty.
-    - Your name will be highlighted if you are on the leaderboard.
-
+```
+Typing-Tutor/
+├── app/                    # Electron frontend
+│   ├── main.js             # App entry point
+│   ├── index.html          # UI layout
+│   ├── ...                 # Supporting assets and scripts
+│
+├── build/                  # Backend artifacts and data
+│   ├── typingtutor.exe     # Compiled C executable
+│   ├── paragraphs.txt      # Categorized text for practice
+│   ├── leaderboard.txt     # Stores leaderboard results
+│
+├── typingtutor.c           # C backend source code
+├── README.md               # Project documentation
+└── .github/workflows/
+    └── release.yml         # GitHub Actions workflow (Windows build)
+```
 ---
 
 ## 📁 Files
@@ -126,17 +92,132 @@ Another hard paragraph to test your typing skills!
 
 ---
 
+# 🚀 Getting Started
+---
+
+
+## 🛠️Setup Instructions
+
+Follow these steps carefully to build and run the application locally:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/itsmenuma/Typing-Tutor.git
+cd Typing-Tutor
+```
+
+If you’re working on your fork, use:
+
+```bash
+git clone https://github.com/<your-username>/Typing-Tutor.git
+cd Typing-Tutor
+```
+
+---
+
+### 2. Prepare the `build/` Directory
+
+Ensure the `build/` folder exists. If not create it:
+
+```bash
+mkdir -p build
+```
+
+Then compile the C backend (Windows example using `gcc`):
+
+```bash
+gcc typingtutor.c -o build/typingtutor.exe
+```
+This will create the `typingtutor.exe` file needed by the Electron app.  (Adjust for other OSes).
+
+---
+
+### 3. Add Paragraph Data
+
+Edit or create a `paragraphs.txt` file inside the `build/` directory if it doesn't exist with your own categorized paragraphs (see the example above in Prerequisites). 
+
+---
+
+### 4. Install Dependencies (Frontend)
+
+Navigate to the frontend directory:
+
+```bash
+cd app
+npm install
+```
+
+---
+
+### 5. Run the Application
+
+While inside the `app/` directory:
+
+```bash
+npm start
+```
+
+The Electron app will launch and communicate with the compiled backend binary located at `../build/typingtutor.exe`.
+
+---
+
+### 6. Using the App
+
+- **Enter Your Name** - Enter your name in the input field before starting the test.
+- **Choose Difficulty & Options** - Select Easy, Medium, or Hard and toggle case sensitivity.
+- **Start Typing** - Click "Start Typing Test" to get a random paragraph. Type it as fast and accurately as possible.
+- **Get Your Stats** - See your CPM, WPM, accuracy, and performance feedback instantly.
+- **View the Leaderboard** - Click "Leaderboard" to see the top 5 scores for the selected difficulty. Your name will be highlighted if you are on the leaderboard.
+
+---
+
+## 🖼️ Screenshots
+
+### 🏠 Home Screen
+![Home Screen](screenshots/homePage.png)
+
+### 🧪 Typing Test in Progress
+![Typing Test](screenshots/typing.png)
+
+### 🏆 Leaderboard View
+![Leaderboard](screenshots/leaderboard.png)
+
+---
+
 ## 🤝 Contributing
 
-We ❤️ contributions!
+We ❤️ contributions and welcome your help! Here's how you can contribute:
 
-- Fork the repository
-- Create a new branch: `git checkout -b feature-name`
-- Commit your changes
-- Push to your branch: `git push origin feature-name`
-- Open a **pull request**
+1. **Fork the Repository**  
+    - Create your own copy of the project.
 
-If you find a bug or have a feature suggestion, please [open an issue](https://github.com/itsmenuma/Typing-Tutor/issues) with details!
+2. **Create a Feature Branch**  
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+3. **Make Your Changes**  
+   - Follow existing code style conventions (clean, readable, well-commented code).  
+   - Test your changes locally using `npm start` and building the C backend if needed.
+
+4. **Commit Your Changes**  
+   Use clear, concise commit messages:  
+   ```bash
+   git commit -m Your commit message"  
+   ```
+
+5. **Push Your Branch**  
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+
+6. **Open a Pull Request**  
+    - Submit your changes for review on GitHub.
+
+---
+
+If you have bug reports or a feature suggestion, please [open an issue](https://github.com/itsmenuma/Typing-Tutor/issues) with detailed information.
 
 ---
 
