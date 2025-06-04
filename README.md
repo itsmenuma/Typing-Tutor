@@ -48,6 +48,8 @@ Typing Tutor Desktop is a **modern desktop application** (Electron + C backend) 
 
 1. **Build the C Backend**
    - Compile `typingtutor.c` to `typingtutor.exe` and place it in the `build/` folder.
+   - cmd for windows = gcc typingtutor.c -o build/typingtutor.exe
+  - cmd for Mac/ windows = gcc typingtutor.c -o build/typingtutor.exe
 
 2. **Prepare Paragraphs**
    - Edit `build/paragraphs.txt` with your own categorized paragraphs.

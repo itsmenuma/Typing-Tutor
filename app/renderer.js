@@ -1,5 +1,6 @@
 const { ipcRenderer } = require('electron');
 
+
 let currentParagraph = '';
 let startTime = 0;
 let selectedDifficulty = 'Easy'; // Set default difficulty
@@ -42,21 +43,30 @@ window.setDifficulty = function(level) {
 };
 
 // Update runTypingTutor to use stored username
-window.runTypingTutor = async function() {
-    if (!setUsername()) return; // Validate username first
-    if (!selectedDifficulty) return;
+const path = require('path');
+const os = require('os');
 
-    document.getElementById('output').innerText = 'Loading...';
-    document.getElementById('result').innerText = '';
-    document.getElementById('userInput').value = '';
-    document.getElementById('submitBtn').disabled = false; // Enable submit on new test
+ipcMain.handle('run-typing-tutor', async (event, args) => {
+  let binaryPath;
 
-    const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-paragraph', selectedDifficulty]);
-    const match = result.match(/Random Paragraph:\s*([\s\S]*)/);
-    currentParagraph = match ? match[1].trim() : '';
-    document.getElementById('output').innerText = currentParagraph || "Could not load paragraph!";
-    startTime = Date.now();
-};
+  if (os.platform() === 'darwin') {
+    binaryPath = path.join(__dirname, 'build', 'typingtutor-mac'); // macOS binary
+  } else if (os.platform() === 'win32') {
+    binaryPath = path.join(__dirname, 'build', 'typingtutor.exe');
+  } else {
+    throw new Error('Unsupported OS');
+  }
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(binaryPath, args);
+    let output = '';
+    child.stdout.on('data', (data) => (output += data.toString()));
+    child.stderr.on('data', (err) => console.error('stderr:', err.toString()));
+    child.on('close', () => resolve(output));
+    child.on('error', (err) => reject(err));
+  });
+});
+
 
 // Update submitTyping to use stored username
 window.submitTyping = async function() {
