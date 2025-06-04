@@ -1,59 +1,886 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Typing Tutor Desktop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typing Tutor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
+      background: #323437;
+      color: #d1d0c5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 0;
+      background: #2c2e31;
+      border-bottom: 1px solid #3c3e41;
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #e2b714;
+      letter-spacing: -1px;
+    }
+
+    .container {
+      flex: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      width: 100%;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      border-bottom: 1px solid #3c3e41;
+      padding-bottom: 1rem;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #646669;
+      font-size: 1.1rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #d1d0c5;
+      background: #3c3e41;
+    }
+
+    .tab-btn.active {
+      color: #e2b714;
+      background: #3c3e41;
+    }
+
+    .settings-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .settings-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .settings-group label {
+      color: #646669;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .difficulty-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .difficulty-btn {
+      background: #3c3e41;
+      border: none;
+      color: #646669;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .difficulty-btn:hover {
+      color: #d1d0c5;
+      background: #4c4e51;
+    }
+
+    .difficulty-btn.active {
+      color: #323437;
+      background: #e2b714;
+    }
+
+    .username-input {
+      background: #3c3e41;
+      border: 2px solid #3c3e41;
+      color: #d1d0c5;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+      width: 150px;
+    }
+
+    .username-input:focus {
+      border-color: #e2b714;
+    }
+
+    .username-input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .checkbox {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #646669;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .checkbox:checked {
+      background: #e2b714;
+      border-color: #e2b714;
+    }
+
+    .checkbox:checked::after {
+      content: '✓';
+      position: absolute;
+      top: -2px;
+      left: 2px;
+      color: #323437;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .text-display {
+      background: #2c2e31;
+      border-radius: 12px;
+      padding: 2rem;
+      margin: 2rem 0;
+      font-size: 1.5rem;
+      line-height: 2.2;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      word-spacing: 0.2em;
+      position: relative;
+      min-height: 200px;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      border: 2px solid #3c3e41;
+      transition: border-color 0.3s ease;
+    }
+
+    .text-display.active {
+      border-color: #e2b714;
+    }
+
+    .char {
+      position: relative;
+      color: #646669;
+      transition: all 0.1s ease;
+    }
+
+    .char.correct {
+      color: #d1d0c5;
+      background: rgba(226, 183, 20, 0.1);
+    }
+
+    .char.incorrect {
+      color: #ca4754;
+      background: rgba(202, 71, 84, 0.2);
+    }
+
+    .char.current {
+      background: #e2b714;
+      color: #323437;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0.3; }
+    }
+
+    .start-btn {
+      background: #e2b714;
+      border: none;
+      color: #323437;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: block;
+      margin: 0 auto 2rem;
+    }
+
+    .start-btn:hover:not(:disabled) {
+      background: #f0c419;
+      transform: translateY(-1px);
+    }
+
+    .start-btn:disabled {
+      background: #646669;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .hidden-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: #2c2e31;
+      border-radius: 12px;
+      border: 2px solid #3c3e41;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #e2b714;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #646669;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.5rem;
+    }
+
+    .leaderboard {
+      background: #2c2e31;
+      border-radius: 12px;
+      padding: 2rem;
+      border: 2px solid #3c3e41;
+    }
+
+    .leaderboard h2 {
+      color: #e2b714;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .leaderboard-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      background: #3c3e41;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .leaderboard-entry:hover {
+      transform: translateX(4px);
+      background: #4c4e51;
+    }
+
+    .leaderboard-entry.current-user {
+      background: rgba(226, 183, 20, 0.1);
+      border: 1px solid #e2b714;
+    }
+
+    .rank {
+      font-weight: 600;
+      color: #e2b714;
+      width: 40px;
+    }
+
+    .username {
+      flex: 1;
+      color: #d1d0c5;
+      font-weight: 500;
+    }
+
+    .wpm {
+      color: #646669;
+      font-size: 0.9rem;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .restart-btn {
+      background: #646669;
+      border: none;
+      color: #d1d0c5;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .restart-btn:hover {
+      background: #7c7e81;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+      
+      .text-display {
+        font-size: 1.2rem;
+        padding: 1.5rem;
+      }
+      
+      .settings-bar {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
-  <div id="main-container">
-    <h1>Typing Tutor</h1>
+  <div class="header">
+    <div class="logo">Typing Tutor</div>
+  </div>
+
+  <div class="container">
     <div class="tabs">
-      <button class="tab-btn active" id="tab-test" onclick="showTab('test')">Typing Test</button>
-      <button class="tab-btn" id="tab-leaderboard" onclick="showTab('leaderboard')">Leaderboard</button>
+      <button class="tab-btn active" onclick="showTab('test')">test</button>
+      <button class="tab-btn" onclick="showTab('leaderboard')">leaderboard</button>
     </div>
-    <div id="tab-content-test">
-      <div class="input-group">
-        <label for="username">Name:</label>
-        <input type="text" id="username" placeholder="Enter your name" maxlength="20">
-      </div>
-      <div class="difficulty-section">
-        <h2>Customize Test</h2>
-        <div class="difficulty-buttons">
-          <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
-          <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
-          <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
+
+    <div id="tab-test" class="tab-content active">
+      <div class="settings-bar">
+        <div class="settings-group">
+          <label>name</label>
+          <input type="text" class="username-input" id="username" placeholder="enter name" maxlength="20">
         </div>
-        <label class="case-label">
-          <input type="checkbox" id="caseSensitive" checked>
-          Case Sensitive
-        </label>
+        
+        <div class="settings-group">
+          <label>difficulty</label>
+          <div class="difficulty-buttons">
+            <button class="difficulty-btn active" onclick="setDifficulty('Easy')">easy</button>
+            <button class="difficulty-btn" onclick="setDifficulty('Medium')">medium</button>
+            <button class="difficulty-btn" onclick="setDifficulty('Hard')">hard</button>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <div class="checkbox-wrapper">
+            <input type="checkbox" class="checkbox" id="caseSensitive" checked>
+            <label>case sensitive</label>
+          </div>
+        </div>
       </div>
-      <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
-      <pre id="output"></pre>
-      <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
-      <button id="submitBtn" onclick="submitTyping()">Submit</button>
-      <div id="result"></div>
+
+      <button class="start-btn" id="startBtn" onclick="startTest()" disabled>click here or start typing</button>
+
+      <div class="text-display" id="textDisplay">
+        <div id="loadingText">Click start to load a paragraph...</div>
+      </div>
+
+      <input type="text" class="hidden-input" id="hiddenInput">
+
+      <div class="stats" id="stats" style="display: none;">
+        <div class="stat-item">
+          <span class="stat-value" id="wpmStat">0</span>
+          <span class="stat-label">wpm</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="accuracyStat">0%</span>
+          <span class="stat-label">accuracy</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="timeStat">0s</span>
+          <span class="stat-label">time</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="errorsStat">0</span>
+          <span class="stat-label">errors</span>
+        </div>
+      </div>
+
+      <button class="restart-btn" id="restartBtn" onclick="restartTest()" style="display: none;">restart test</button>
     </div>
-    <div id="tab-content-leaderboard" style="display:none;">
-      <h2>Leaderboard</h2>
-      <pre id="leaderboard"></pre>
+
+    <div id="tab-leaderboard" class="tab-content">
+      <div class="leaderboard">
+        <h2>Leaderboard</h2>
+        <div id="leaderboardContent">
+          <div class="leaderboard-entry">
+            <span class="rank">1</span>
+            <span class="username">Loading...</span>
+            <span class="wpm">-- wpm</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <script src="renderer.js"></script>
+
   <script>
-    function showTab(tab) {
-      document.getElementById('tab-content-test').style.display = tab === 'test' ? '' : 'none';
-      document.getElementById('tab-content-leaderboard').style.display = tab === 'leaderboard' ? '' : 'none';
-      document.getElementById('tab-test').classList.toggle('active', tab === 'test');
-      document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
-      if(tab === 'leaderboard') showLeaderboard();
-    }
+    // Import Electron IPC
+    const { ipcRenderer } = require('electron');
+
+    // Global variables
+    let currentParagraph = '';
+    let currentUser = '';
+    let selectedDifficulty = 'Easy';
+    let testStarted = false;
+    let testCompleted = false;
+    let startTime = 0;
+    let currentPosition = 0;
+    let errors = 0;
+    let correctChars = 0;
+    let typedText = ''; // Track what user actually typed
+
+    // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-      showTab('test');
-      showLeaderboard(); 
+      checkStartConditions();
+      showLeaderboard();
+      setupEventListeners();
     });
+
+    function setupEventListeners() {
+      const usernameInput = document.getElementById('username');
+      const hiddenInput = document.getElementById('hiddenInput');
+      const textDisplay = document.getElementById('textDisplay');
+
+      usernameInput.addEventListener('input', checkStartConditions);
+
+      // Focus management
+      textDisplay.addEventListener('click', function() {
+        if (testStarted && !testCompleted) {
+          hiddenInput.focus();
+        }
+      });
+
+      // Handle typing
+      hiddenInput.addEventListener('input', handleTyping);
+      hiddenInput.addEventListener('keydown', function(e) {
+        if (!testStarted || testCompleted) return;
+        
+        if (e.key === 'Backspace') {
+          handleBackspace();
+        }
+      });
+
+      // Auto-focus when test starts
+      document.addEventListener('keydown', function(e) {
+        if (testStarted && !testCompleted && document.activeElement !== hiddenInput) {
+          if (e.key.length === 1 || e.key === 'Backspace') {
+            hiddenInput.focus();
+          }
+        }
+      });
+    }
+
+    function checkStartConditions() {
+      const username = document.getElementById('username').value.trim();
+      const startBtn = document.getElementById('startBtn');
+      startBtn.disabled = !username || !selectedDifficulty;
+      
+      if (username) {
+        currentUser = username;
+      }
+    }
+
+    function setDifficulty(level) {
+      selectedDifficulty = level;
+      
+      // Update button states
+      document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      event.target.classList.add('active');
+      checkStartConditions();
+    }
+
+    async function startTest() {
+      if (!currentUser) return;
+
+      // Lock username
+      document.getElementById('username').disabled = true;
+      
+      // Load paragraph
+      document.getElementById('loadingText').textContent = 'Loading paragraph...';
+      
+      try {
+        // Simulate API call - replace with your actual ipcRenderer call
+        const result = await loadParagraph();
+        currentParagraph = result;
+        
+        renderText();
+        initializeTest();
+        
+      } catch (error) {
+        document.getElementById('loadingText').textContent = 'Error loading paragraph. Please try again.';
+        document.getElementById('username').disabled = false;
+      }
+    }
+
+    // Load paragraph from your typing tutor executable
+    async function loadParagraph() {
+      try {
+        const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-paragraph', selectedDifficulty]);
+        const match = result.match(/Random Paragraph:\s*([\s\S]*)/);
+        return match ? match[1].trim() : 'Could not load paragraph!';
+      } catch (error) {
+        console.error('Error loading paragraph:', error);
+        throw new Error('Failed to load paragraph');
+      }
+    }
+
+    function renderText() {
+      const textDisplay = document.getElementById('textDisplay');
+      textDisplay.innerHTML = '';
+      
+      for (let i = 0; i < currentParagraph.length; i++) {
+        const char = document.createElement('span');
+        char.textContent = currentParagraph[i];
+        char.className = 'char';
+        char.id = `char-${i}`;
+        textDisplay.appendChild(char);
+      }
+      
+      updateCurrentChar();
+    }
+
+    function initializeTest() {
+      testStarted = true;
+      testCompleted = false;
+      currentPosition = 0;
+      errors = 0;
+      correctChars = 0;
+      typedText = ''; // Reset typed text
+      startTime = Date.now();
+      
+      document.getElementById('textDisplay').classList.add('active');
+      document.getElementById('hiddenInput').focus();
+      document.getElementById('startBtn').style.display = 'none';
+    }
+
+    function handleTyping(e) {
+      if (!testStarted || testCompleted) return;
+      
+      const inputValue = e.target.value;
+      const lastChar = inputValue.slice(-1);
+      
+      if (currentPosition >= currentParagraph.length) return;
+      
+      // Add to typed text
+      typedText += lastChar;
+      
+      const expectedChar = currentParagraph[currentPosition];
+      const currentCharElement = document.getElementById(`char-${currentPosition}`);
+      
+      const caseSensitive = document.getElementById('caseSensitive').checked;
+      const isCorrect = caseSensitive ? 
+        lastChar === expectedChar : 
+        lastChar.toLowerCase() === expectedChar.toLowerCase();
+      
+      if (isCorrect) {
+        currentCharElement.classList.add('correct');
+        currentCharElement.classList.remove('incorrect');
+        correctChars++;
+      } else {
+        currentCharElement.classList.add('incorrect');
+        currentCharElement.classList.remove('correct');
+        errors++;
+      }
+      
+      currentPosition++;
+      
+      // Clear the input to prevent it from growing
+      e.target.value = '';
+      
+      updateCurrentChar();
+      
+      if (currentPosition >= currentParagraph.length) {
+        completeTest();
+      }
+    }
+
+    function handleBackspace() {
+      if (currentPosition > 0) {
+        currentPosition--;
+        // Remove last character from typed text
+        typedText = typedText.slice(0, -1);
+        const charElement = document.getElementById(`char-${currentPosition}`);
+        charElement.classList.remove('correct', 'incorrect');
+        updateCurrentChar();
+      }
+    }
+
+    function updateCurrentChar() {
+      // Remove current class from all chars
+      document.querySelectorAll('.char.current').forEach(char => {
+        char.classList.remove('current');
+      });
+      
+      // Add current class to the current position
+      if (currentPosition < currentParagraph.length) {
+        document.getElementById(`char-${currentPosition}`).classList.add('current');
+      }
+    }
+
+    async function completeTest() {
+      testCompleted = true;
+      const endTime = Date.now();
+      const timeTaken = (endTime - startTime) / 1000;
+      
+      document.getElementById('textDisplay').classList.remove('active');
+      document.getElementById('hiddenInput').blur();
+      
+      // Calculate stats
+      const wpm = Math.round((correctChars / 5) / (timeTaken / 60));
+      const accuracy = Math.round((correctChars / (correctChars + errors)) * 100);
+      
+      // Update stats display
+      document.getElementById('wpmStat').textContent = wpm;
+      document.getElementById('accuracyStat').textContent = accuracy + '%';
+      document.getElementById('timeStat').textContent = Math.round(timeTaken) + 's';
+      document.getElementById('errorsStat').textContent = errors;
+      document.getElementById('stats').style.display = 'grid';
+      document.getElementById('restartBtn').style.display = 'block';
+      
+      // Submit to leaderboard - replace with your actual implementation
+      await submitScore(wpm, accuracy, timeTaken);
+      showLeaderboard();
+    }
+
+    // Submit score to your typing tutor executable
+    async function submitScore(wpm, accuracy, timeTaken) {
+      try {
+        const caseSensitive = document.getElementById('caseSensitive').checked ? 0 : 1;
+        const args = [
+          currentUser,
+          selectedDifficulty,
+          caseSensitive.toString(),
+          timeTaken.toString(),
+          typedText, // The actual text the user typed
+          currentParagraph // The original paragraph
+        ];
+        
+        const result = await ipcRenderer.invoke('run-typing-tutor', args);
+        console.log('Score submitted successfully:', result);
+        
+        // Extract and log only the stats part
+        const statsMatch = result.match(/Typing Stats:\n([\s\S]*)/);
+        if (statsMatch) {
+          console.log('Typing Stats:', statsMatch[1].trim());
+        }
+        
+        return result;
+      } catch (error) {
+        console.error('Error submitting score:', error);
+        throw new Error('Failed to submit score');
+      }
+    }
+
+    function restartTest() {
+      // Reset state
+      testStarted = false;
+      testCompleted = false;
+      currentPosition = 0;
+      errors = 0;
+      correctChars = 0;
+      typedText = ''; // Reset typed text
+      
+      // Reset UI
+      document.getElementById('username').disabled = false;
+      document.getElementById('textDisplay').classList.remove('active');
+      document.getElementById('textDisplay').innerHTML = '<div id="loadingText">Click start to load a paragraph...</div>';
+      document.getElementById('stats').style.display = 'none';
+      document.getElementById('restartBtn').style.display = 'none';
+      document.getElementById('startBtn').style.display = 'block';
+      
+      checkStartConditions();
+    }
+
+    // Load leaderboard from your typing tutor executable
+    async function showLeaderboard() {
+      try {
+        const result = await ipcRenderer.invoke('run-typing-tutor', [
+          '--get-leaderboard',
+          selectedDifficulty || "Easy",
+          currentUser || ""
+        ]);
+        
+        const lines = result.trim().split('\n');
+        const leaderboardContent = document.getElementById('leaderboardContent');
+        leaderboardContent.innerHTML = '';
+        
+        let userHighlighted = false;
+        let count = 0;
+        
+        // Show top 10 entries
+        for (let i = 0; i < lines.length && count < 10; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          const entryElement = document.createElement('div');
+          entryElement.className = 'leaderboard-entry';
+          
+          // Check if this line contains the current user
+          if (currentUser && line.includes(currentUser)) {
+            entryElement.classList.add('current-user');
+            userHighlighted = true;
+          }
+          
+          // Parse the leaderboard line (assuming format like "1. Username - 85 WPM")
+          // Adjust this parsing based on your actual leaderboard format
+          const parts = line.split('-');
+          if (parts.length >= 2) {
+            const leftPart = parts[0].trim(); // "1. Username"
+            const rightPart = parts[1].trim(); // "85 WPM"
+            
+            const rankMatch = leftPart.match(/^(\d+)\./);
+            const rank = rankMatch ? rankMatch[1] : (count + 1);
+            const username = leftPart.replace(/^\d+\.\s*/, '');
+            const wpmMatch = rightPart.match(/(\d+)/);
+            const wpm = wpmMatch ? wpmMatch[1] : '--';
+            
+            entryElement.innerHTML = `
+              <span class="rank">${rank}</span>
+              <span class="username">${username}</span>
+              <span class="wpm">${wpm} wpm</span>
+            `;
+          } else {
+            // Fallback for different format
+            entryElement.innerHTML = `
+              <span class="rank">${count + 1}</span>
+              <span class="username">${line}</span>
+              <span class="wpm">-- wpm</span>
+            `;
+          }
+          
+          leaderboardContent.appendChild(entryElement);
+          count++;
+        }
+        
+        // If user not in top 10, show their rank below
+        if (currentUser && !userHighlighted) {
+          for (let i = 10; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (line.includes(currentUser)) {
+              const entryElement = document.createElement('div');
+              entryElement.className = 'leaderboard-entry current-user';
+              entryElement.style.marginTop = '1rem';
+              entryElement.style.borderTop = '1px solid #646669';
+              entryElement.style.paddingTop = '1rem';
+              
+              // Parse user's rank entry
+              const parts = line.split('-');
+              if (parts.length >= 2) {
+                const leftPart = parts[0].trim();
+                const rightPart = parts[1].trim();
+                
+                const username = leftPart.replace(/^\d+\.\s*/, '');
+                const wpmMatch = rightPart.match(/(\d+)/);
+                const wpm = wpmMatch ? wpmMatch[1] : '--';
+                
+                entryElement.innerHTML = `
+                  <span class="rank">${i + 1}</span>
+                  <span class="username">${username}</span>
+                  <span class="wpm">${wpm} wpm</span>
+                `;
+              }
+              
+              leaderboardContent.appendChild(entryElement);
+              break;
+            }
+          }
+        }
+        
+        // If no entries found, show empty state
+        if (count === 0) {
+          leaderboardContent.innerHTML = `
+            <div class="leaderboard-entry">
+              <span class="username" style="text-align: center; width: 100%;">No scores recorded yet</span>
+            </div>
+          `;
+        }
+        
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        const leaderboardContent = document.getElementById('leaderboardContent');
+        leaderboardContent.innerHTML = `
+          <div class="leaderboard-entry">
+            <span class="username" style="text-align: center; width: 100%; color: #ca4754;">Error loading leaderboard</span>
+          </div>
+        `;
+      }
+    }
+
+    function showTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected tab
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      if (tabName === 'leaderboard') {
+        showLeaderboard();
+      }
+    }
   </script>
 </body>
 </html>
