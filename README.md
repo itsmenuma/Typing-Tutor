@@ -172,19 +172,6 @@ The Electron app will launch and communicate with the compiled backend binary lo
 
 ---
 
-## 🖼️ Screenshots
-
-### 🏠 Home Screen
-![Home Screen](screenshots/homePage.png)
-
-### 🧪 Typing Test in Progress
-![Typing Test](screenshots/typing.png)
-
-### 🏆 Leaderboard View
-![Leaderboard](screenshots/leaderboard.png)
-
----
-
 ## 🤝 Contributing
 
 We ❤️ contributions and welcome your help! Here's how you can contribute:
