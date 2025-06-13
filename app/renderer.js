@@ -1,9 +1,14 @@
 const { ipcRenderer } = require('electron');
 
 let currentParagraph = '';
-let startTime = 0;
 let selectedDifficulty = 'Easy'; // Set default difficulty
 let currentUser = ''; // Add this to store username globally
+let testMode = "paragraph";
+let timeDuration = 1;
+let timerInterval = null;
+let timedTestActive = false;
+let startTime = 0;
+
 
 // Add this function to validate and set username
 window.setUsername = function() {
@@ -25,6 +30,34 @@ window.setUsername = function() {
     return true;
 };
 
+// Add function to set test mode
+window.setTestMode = function (mode) {
+  testMode = mode;
+  document
+    .getElementById("paragraphModeBtn")
+    .classList.toggle("active", mode === "paragraph");
+  document
+    .getElementById("timedModeBtn")
+    .classList.toggle("active", mode === "timed");
+  document.getElementById("timeDurationContainer").style.display =
+    mode === "timed" ? "block" : "none";
+  checkStartConditions();
+};
+
+// Add function to set time duration
+window.setTimeDuration = function (minutes) {
+  timeDuration = minutes;
+  document
+    .getElementById("time1MinBtn")
+    .classList.toggle("active", minutes === 1);
+  document
+    .getElementById("time3MinBtn")
+    .classList.toggle("active", minutes === 3);
+  document
+    .getElementById("time5MinBtn")
+    .classList.toggle("active", minutes === 5);
+};
+
 // Add this function to check if we can enable the start button
 function checkStartConditions() {
     const username = document.getElementById('username').value.trim();
@@ -41,48 +74,115 @@ window.setDifficulty = function(level) {
     checkStartConditions(); // Check if we can enable start button
 };
 
-// Update runTypingTutor to use stored username
-window.runTypingTutor = async function() {
-    if (!setUsername()) return; // Validate username first
-    if (!selectedDifficulty) return;
+// Function to start the timer for timed tests
+function startTimer(minutes) {
+  clearInterval(timerInterval); // Clear any existing timers
 
-    document.getElementById('output').innerText = 'Loading...';
-    document.getElementById('result').innerText = '';
-    document.getElementById('userInput').value = '';
-    document.getElementById('submitBtn').disabled = false; // Enable submit on new test
+  const timerDisplay = document.getElementById("timerDisplay");
+  const timeLeftSpan = document.getElementById("timeLeft");
+  timerDisplay.style.display = "block";
 
-    const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-paragraph', selectedDifficulty]);
-    const match = result.match(/Random Paragraph:\s*([\s\S]*)/);
-    currentParagraph = match ? match[1].trim() : '';
-    document.getElementById('output').innerText = currentParagraph || "Could not load paragraph!";
+  let totalSeconds = minutes * 60;
+  timedTestActive = true;
+
+  function updateTimer() {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    timeLeftSpan.textContent = `${mins}:${secs.toString().padStart(2, "0")}`;
+
+    if (totalSeconds <= 0) {
+      clearInterval(timerInterval);
+      timedTestActive = false;
+      submitTyping(true); // Auto-submit when time is up
+      return;
+    }
+    totalSeconds--;
+  }
+
+  updateTimer(); // Call immediately to show initial time
+  timerInterval = setInterval(updateTimer, 1000);
+}
+
+// Update runTypingTutor to handle both modes
+window.runTypingTutor = async function () {
+  if (!setUsername()) return; // Validate username first
+  if (!selectedDifficulty) return;
+
+  document.getElementById("output").innerText = "Loading...";
+  document.getElementById("result").innerText = "";
+  document.getElementById("userInput").value = "";
+  document.getElementById("submitBtn").disabled = false; // Enable submit on new test
+  document.getElementById("timerDisplay").style.display = "none"; // Hide timer initially
+
+  // Fetch multiple paragraphs for timed mode
+  const arg = ["--get-paragraph", selectedDifficulty];
+
+  if (testMode === "timed") {
+    let result = await ipcRenderer.invoke("run-typing-tutor", ["--get-paragraph", "Hard"]);
+    let match = result.match(/Random Paragraph:\s*([\s\S]*)/);
+    currentParagraph = match ? match[1].trim() : "";
+    document.getElementById("output").innerText =
+      currentParagraph || "Could not load paragraph!";
+
     startTime = Date.now();
+    startTimer(timeDuration);
+  } else {
+    // For paragraph mode, just display the paragraph
+    const result = await ipcRenderer.invoke("run-typing-tutor", arg);
+    const match = result.match(/Random Paragraph:\s*([\s\S]*)/);
+    currentParagraph = match ? match[1].trim() : "";
+    document.getElementById("output").innerText =
+      currentParagraph || "Could not load paragraph!";
+    console.log(currentParagraph);
+    startTime = Date.now();
+  }
+  
 };
 
-// Update submitTyping to use stored username
-window.submitTyping = async function() {
-    if (!currentUser) return; // Ensure we have a username
+// Update submitTyping to handle both modes
+window.submitTyping = async function (isTimedEnd = false) {
+  if (!currentUser) return; // Ensure we have a username
 
-    const userInput = document.getElementById('userInput').value;
-    const timeTaken = (Date.now() - startTime) / 1000; // seconds
-    const caseInsensitive = document.getElementById('caseSensitive').checked ? 0 : 1;
+  // For timed mode with auto-submit, make sure timer is cleared
+  if (isTimedEnd) {
+    clearInterval(timerInterval);
+    document.getElementById("timerDisplay").style.display = "none";
+  } else if (timedTestActive) {
+    // If manually submitting during a timed test
+    clearInterval(timerInterval);
+    document.getElementById("timerDisplay").style.display = "none";
+    timedTestActive = false;
+  }
 
-    const args = [
-        currentUser,
-        selectedDifficulty,
-        caseInsensitive.toString(),
-        timeTaken.toString(),
-        userInput,
-        currentParagraph
-    ];
-    const result = await ipcRenderer.invoke('run-typing-tutor', args);
+  const userInput = document.getElementById("userInput").value;
+  const timeTaken = (Date.now() - startTime) / 1000; // seconds
+  const caseInsensitive = document.getElementById("caseSensitive").checked
+    ? 0
+    : 1;
 
-    // Only show the stats part (everything after "Typing Stats:")
-    const statsMatch = result.match(/Typing Stats:\n([\s\S]*)/);
-    document.getElementById('result').innerText = statsMatch ? statsMatch[1].trim() : result;
-    document.getElementById('submitBtn').disabled = true; // Disable after submit
+  // Add test mode to arguments
+  const args = [
+    currentUser,
+    selectedDifficulty,
+    caseInsensitive.toString(),
+    timeTaken.toString(),
+    userInput,
+    currentParagraph,
+    testMode,
+    timeDuration.toString(),
+  ];
 
-    // After updating the leaderboard data, refresh the leaderboard UI:
-    showLeaderboard();
+  const result = await ipcRenderer.invoke("run-typing-tutor", args);
+
+  // Only show the stats part (everything after "Typing Stats:")
+  const statsMatch = result.match(/Typing Stats:\n([\s\S]*)/);
+  document.getElementById("result").innerText = statsMatch
+    ? statsMatch[1].trim()
+    : result;
+  document.getElementById("submitBtn").disabled = true; // Disable after submit
+
+  // After updating the leaderboard data, refresh the leaderboard UI:
+  showLeaderboard();
 };
 
 // Update showLeaderboard to use stored username
