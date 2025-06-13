@@ -137,3 +137,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('easyBtn').style.fontWeight = 'bold';
     checkStartConditions(); // Check if we can enable start button
 });
+
+const keyPressAudio = new Audio('public/key-press.wav');
+
+// Add key press sound to userInput textarea
+document.getElementById('userInput').addEventListener('keydown', function(e) {
+  // Play sound on keydown (except for modifier keys)
+  if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+    keyPressAudio.currentTime = 0; // Reset audio to start
+    keyPressAudio.play().catch(err => console.error('Error playing sound:', err));
+  }
+  
+  // Keep the existing Enter key handler
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitTyping();
+  }
+});
