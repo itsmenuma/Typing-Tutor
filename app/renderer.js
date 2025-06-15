@@ -137,7 +137,7 @@ window.runTypingTutor = async function () {
     startTime = Date.now();  
     typingSpeedFactor = 1.0;
     lastKeyPressTime = 0;
-
+  }
 };
 
 // Update submitTyping to handle both modes
