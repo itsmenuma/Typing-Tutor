@@ -21,16 +21,30 @@
       </div>
       <div class="difficulty-section">
         <h2>Customize Test</h2>
+
+        <!-- Difficulty buttons (disabled when using custom input) -->
         <div class="difficulty-buttons">
           <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
           <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
           <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
         </div>
+
+        <!-- Case sensitivity -->
         <label class="case-label">
           <input type="checkbox" id="caseSensitive" checked>
           Case Sensitive
         </label>
+
+        <!-- Custom paragraph toggle -->
+        <label style="display: block; margin-top: 10px;">
+          <input type="checkbox" id="useCustomText" onchange="toggleCustomInput()">
+          Use custom paragraph input
+        </label>
+
+        <!-- Custom input area (disabled by default) -->
+        <textarea id="customParagraph" rows="4" cols="60" placeholder="Enter custom paragraph..." disabled style="margin-top: 10px;"></textarea>
       </div>
+
       <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
       <pre id="output"></pre>
       <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
@@ -51,6 +65,17 @@
       document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
       if(tab === 'leaderboard') showLeaderboard();
     }
+
+    function toggleCustomInput() {
+      const isCustom = document.getElementById('useCustomText').checked;
+      document.getElementById('customParagraph').disabled = !isCustom;
+
+      // Optional: disable difficulty buttons when using custom input
+      ['easyBtn', 'mediumBtn', 'hardBtn'].forEach(id => {
+        document.getElementById(id).disabled = isCustom;
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       showTab('test');
       showLeaderboard(); 

@@ -28,8 +28,14 @@ window.setUsername = function() {
 // Add this function to check if we can enable the start button
 function checkStartConditions() {
     const username = document.getElementById('username').value.trim();
+    const useCustom = document.getElementById('useCustomText').checked;
+    const customText = document.getElementById('customParagraph').value.trim();
+
+    const hasValidCustomText = useCustom && customText.length > 0;
+    const hasValidDifficulty = !useCustom && selectedDifficulty;
+
     const startBtn = document.getElementById('startBtn');
-    startBtn.disabled = !username || !selectedDifficulty;
+    startBtn.disabled = !(username && (hasValidCustomText || hasValidDifficulty));
 }
 
 // Update setDifficulty function
@@ -42,19 +48,31 @@ window.setDifficulty = function(level) {
 };
 
 // Update runTypingTutor to use stored username
-window.runTypingTutor = async function() {
+window.runTypingTutor = async function () {
     if (!setUsername()) return; // Validate username first
-    if (!selectedDifficulty) return;
+
+    const useCustom = document.getElementById('useCustomText').checked;
+    const customText = document.getElementById('customParagraph').value.trim();
 
     document.getElementById('output').innerText = 'Loading...';
     document.getElementById('result').innerText = '';
     document.getElementById('userInput').value = '';
-    document.getElementById('submitBtn').disabled = false; // Enable submit on new test
+    document.getElementById('submitBtn').disabled = false;
 
-    const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-paragraph', selectedDifficulty]);
-    const match = result.match(/Random Paragraph:\s*([\s\S]*)/);
-    currentParagraph = match ? match[1].trim() : '';
-    document.getElementById('output').innerText = currentParagraph || "Could not load paragraph!";
+    if (useCustom && customText.length > 0) {
+        // Use user's custom input
+        currentParagraph = customText;
+        document.getElementById('output').innerText = currentParagraph;
+    } else {
+        if (!selectedDifficulty) return;
+
+        // Fallback: fetch paragraph based on difficulty
+        const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-paragraph', selectedDifficulty]);
+        const match = result.match(/Random Paragraph:\s*([\s\S]*)/);
+        currentParagraph = match ? match[1].trim() : '';
+        document.getElementById('output').innerText = currentParagraph || "Could not load paragraph!";
+    }
+
     startTime = Date.now();
     typingSpeedFactor = 1.0;
     lastKeyPressTime = 0;
@@ -133,6 +151,10 @@ document.getElementById('userInput').addEventListener('keydown', function(e) {
 document.getElementById('username').addEventListener('input', function() {
     checkStartConditions();
 });
+
+// Add event listeners for custom paragraph input
+document.getElementById('useCustomText').addEventListener('change', checkStartConditions);
+document.getElementById('customParagraph').addEventListener('input', checkStartConditions);
 
 // When page loads, highlight Easy button
 document.addEventListener('DOMContentLoaded', function() {
