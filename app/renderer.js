@@ -56,6 +56,8 @@ window.runTypingTutor = async function() {
     currentParagraph = match ? match[1].trim() : '';
     document.getElementById('output').innerText = currentParagraph || "Could not load paragraph!";
     startTime = Date.now();
+    typingSpeedFactor = 1.0;
+    lastKeyPressTime = 0;
 };
 
 // Update submitTyping to use stored username
@@ -136,4 +138,82 @@ document.getElementById('username').addEventListener('input', function() {
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('easyBtn').style.fontWeight = 'bold';
     checkStartConditions(); // Check if we can enable start button
+});
+
+
+let typingSpeedFactor = 1.0;
+let lastKeyPressTime = 0;
+const realismFactor = 5; // Controls how many audio objects to create for overlapping sounds
+let keyPressAudios = Array.from(
+  { length: realismFactor },
+  () => new Audio('public/key-press.wav')
+);
+let currentAudioIndex = 0;
+let soundEnabled = true;
+keyPressAudios.forEach((audio) => audio.load());
+
+const ignoredKeys = [
+  'Shift',
+  'CapsLock',
+  'Tab',
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'ArrowDown',
+  'Escape',
+  'PageUp',
+  'PageDown',
+  'Insert',
+  'Delete',
+  'Home',
+  'End',
+];
+
+keyPressAudios.forEach((audio) => audio.load());
+
+function toggleSound() {
+  const muteBtn = document.getElementById('muteBtn');
+  if (muteBtn) {
+    soundEnabled = !soundEnabled;
+    muteBtn.innerHTML = soundEnabled ? 'Mute' : 'Unmute';
+  }
+}
+
+document.getElementById('userInput').addEventListener('keydown', function (e) {
+  if (
+    !e.ctrlKey &&
+    !e.altKey &&
+    !e.metaKey &&
+    soundEnabled &&
+    !ignoredKeys.includes(e.key)
+  ) {
+    // Use alternating audio objects to allow overlapping sounds
+    currentAudioIndex = (currentAudioIndex + 1) % realismFactor;
+    const audio = keyPressAudios[currentAudioIndex];
+    audio.volume = 0.8 + Math.random() * 0.2; // Slight volume variation
+
+    // Adjust playback rate based on typing speed with slight randomization
+    const now = Date.now();
+    if (lastKeyPressTime > 0) {
+      const timeBetweenKeyPresses = now - lastKeyPressTime;
+      if (timeBetweenKeyPresses < 100) {
+        // Fast typing
+        typingSpeedFactor = Math.min(1.5, typingSpeedFactor + 0.01); // Gradually increase speed
+      } else if (timeBetweenKeyPresses > 300) {
+        // Slow typing
+        typingSpeedFactor = Math.max(0.7, typingSpeedFactor - 0.01); // Gradually decrease speed
+      }
+    }
+    lastKeyPressTime = now;
+
+    // Apply the speed factor with slight randomization for natural feel
+    audio.playbackRate = typingSpeedFactor * (0.97 + Math.random() * 0.06);
+    audio.currentTime = 0;
+    audio.play().catch((err) => console.error('Error playing sound:', err));
+  }
+
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitTyping();
+  }
 });
