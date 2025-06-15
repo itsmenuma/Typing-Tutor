@@ -3,3 +3,4 @@
 .vscode/
 a.out
 *_profile.txt
+app/node_modules
