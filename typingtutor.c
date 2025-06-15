@@ -7,6 +7,28 @@
 #include <strings.h> // for strncasecmp
 #include <math.h>
 
+// Cross-platform includes for real-time typing
+#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
+    #include <conio.h>
+    #include <windows.h>
+    #define IS_WINDOWS 1
+#else
+    #include <termios.h>
+    #include <unistd.h>
+    #define IS_WINDOWS 0
+#endif
+
+#if IS_WINDOWS
+// Define the constant if it's not already defined (for older Windows SDKs)
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+
+#ifndef ENABLE_VIRTUAL_TERMINAL_INPUT
+#define ENABLE_VIRTUAL_TERMINAL_INPUT 0x0200
+#endif
+#endif
+
 // global declarations
 #define max_para_length 200
 #define max_file_line_length 200
@@ -21,6 +43,18 @@
 #define HARD_MAX_SPEED 16
 
 #define CHECK_FILE_OP(f, msg) do { if (!(f)) { perror(msg); exit(EXIT_FAILURE); } } while (0)
+
+// ANSI color codes for terminal output
+#define ANSI_RESET "\033[0m"
+#define ANSI_RED "\033[1;31m"
+#define ANSI_GREEN "\033[1;32m"
+#define ANSI_YELLOW "\033[1;33m"
+#define ANSI_WHITE "\033[1;37m"
+#define ANSI_BG_RED "\033[41m"
+#define ANSI_BG_GREEN "\033[42m"
+#define ANSI_CLEAR_SCREEN "\033[2J"
+#define ANSI_CURSOR_HOME "\033[H"
+#define ANSI_CURSOR_UP "\033[A"
 
 typedef struct {
     char username[50];
@@ -59,6 +93,7 @@ typedef struct {
     int count;
 } ParagraphCache;
 
+// Function declarations
 void loadParagraphs(FILE *file, ParagraphCache *cache);
 void freeParagraphCache(ParagraphCache *cache);
 char *getRandomParagraph(ParagraphCache *cache);
@@ -76,6 +111,312 @@ void toLowerStr(char *dst, const char *src);
 void trim_newline(char *str);
 void promptDifficulty(Difficulty *difficulty, char *difficultyLevel);
 void displayPreviousAttempts(TypingStats attempts[], int numAttempts);
+void loadParagraphsForDifficulty(FILE *file, ParagraphCache *cache, const char *difficultyLevel);
+void displayUserSummary(UserProfile *profile);
+void collectUserInput(char *input, size_t inputSize, double *elapsedTime);
+int isValidInput(const char *input);
+void processAttempts(ParagraphCache *cache);
+
+// Real-time typing function declarations
+char getRealTimeChar();
+void clearScreen();
+void enableWindowsColorSupport();
+void initializeRealtimeMode();
+void displayRealtimeTyping(const char* targetText, const char* userInput, int currentPos, int wrongChars, double elapsedTime);
+void collectUserInputRealtime(const char* targetText, char *input, size_t inputSize, double *elapsedTime, TypingStats *stats);
+int promptTypingMode();
+
+// ===== REAL-TIME TYPING FUNCTIONS =====
+
+// Cross-platform single character input without echo
+char getRealTimeChar() {
+#if IS_WINDOWS
+    // Windows implementation
+    return _getch();  // Use _getch() instead of getch() for better compatibility
+#else
+    // Unix/Linux/macOS implementation
+    struct termios old, new;
+    char ch;
+    
+    // Get current terminal settings
+    if (tcgetattr(STDIN_FILENO, &old) != 0) {
+        // Fallback to regular getchar if termios fails
+        return getchar();
+    }
+    
+    // Set up new terminal settings for raw input
+    new = old;
+    new.c_lflag &= ~(ICANON | ECHO);  // Disable canonical mode and echo
+    new.c_cc[VMIN] = 1;               // Read at least 1 character
+    new.c_cc[VTIME] = 0;              // No timeout
+    
+    // Apply new settings
+    if (tcsetattr(STDIN_FILENO, TCSANOW, &new) != 0) {
+        // Fallback if setting fails
+        return getchar();
+    }
+    
+    // Read character
+    if (read(STDIN_FILENO, &ch, 1) != 1) {
+        ch = 0;  // Return null character if read fails
+    }
+    
+    // Restore original terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &old);
+    
+    return ch;
+#endif
+}
+
+// Clear screen function
+void clearScreen() {
+#if IS_WINDOWS
+    // Windows-specific clear screen
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    DWORD count;
+    DWORD cellCount;
+    COORD homeCoords = {0, 0};
+    
+    if (hConsole == INVALID_HANDLE_VALUE) {
+        // Fallback to ANSI codes
+        printf("\033[2J\033[H");
+        fflush(stdout);
+        return;
+    }
+    
+    // Get console screen buffer info
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+        // Fallback to ANSI codes
+        printf("\033[2J\033[H");
+        fflush(stdout);
+        return;
+    }
+    
+    cellCount = csbi.dwSize.X * csbi.dwSize.Y;
+    
+    // Fill screen with spaces
+    if (!FillConsoleOutputCharacter(hConsole, (TCHAR)' ', cellCount, homeCoords, &count)) {
+        printf("\033[2J\033[H");
+        fflush(stdout);
+        return;
+    }
+    
+    // Fill screen with current attributes
+    if (!FillConsoleOutputAttribute(hConsole, csbi.wAttributes, cellCount, homeCoords, &count)) {
+        printf("\033[2J\033[H");
+        fflush(stdout);
+        return;
+    }
+    
+    // Move cursor to home position
+    SetConsoleCursorPosition(hConsole, homeCoords);
+#else
+    // Unix/Linux/macOS - use ANSI escape sequences
+    printf("\033[2J\033[H");
+    fflush(stdout);
+#endif
+}
+
+// Enable Windows color support
+void enableWindowsColorSupport() {
+#if IS_WINDOWS
+    // Enable ANSI color codes on Windows 10 and later
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut != INVALID_HANDLE_VALUE) {
+        DWORD dwMode = 0;
+        if (GetConsoleMode(hOut, &dwMode)) {
+            dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(hOut, dwMode);
+        }
+    }
+#endif
+}
+
+// Initialize real-time mode
+void initializeRealtimeMode() {
+    // Enable color support on Windows
+    enableWindowsColorSupport();
+    
+    // Clear screen
+    clearScreen();
+    
+    printf(ANSI_GREEN "Real-Time Typing Mode Initialized!\n" ANSI_RESET);
+    printf(ANSI_WHITE "Platform: ");
+#if IS_WINDOWS
+    printf("Windows\n");
+#else
+    printf("Unix/Linux/macOS\n");
+#endif
+    printf("Color support: Enabled\n" ANSI_RESET);
+    printf("\nPress any key to continue...\n");
+    getRealTimeChar();
+}
+
+// Display typing progress with real-time highlighting
+void displayRealtimeTyping(const char* targetText, const char* userInput, int currentPos, int wrongChars, double elapsedTime) {
+    int targetLen = strlen(targetText);
+    int inputLen = strlen(userInput);
+    
+    // Clear screen properly
+    clearScreen();
+    
+    // Display header
+    printf(ANSI_GREEN "=== Real-Time Typing Mode ===\n" ANSI_RESET);
+    printf(ANSI_WHITE "Target Text:\n" ANSI_RESET);
+    
+    // Display target text with highlighting
+    for (int i = 0; i < targetLen; i++) {
+        if (i < inputLen) {
+            // Character has been typed
+            if (userInput[i] == targetText[i]) {
+                // Correct character - green
+                printf(ANSI_GREEN "%c" ANSI_RESET, targetText[i]);
+            } else {
+                // Incorrect character - red background
+                printf(ANSI_BG_RED ANSI_WHITE "%c" ANSI_RESET, targetText[i]);
+            }
+        } else if (i == currentPos) {
+            // Current position - yellow highlight
+            printf(ANSI_YELLOW "%c" ANSI_RESET, targetText[i]);
+        } else {
+            // Not yet typed - white
+            printf(ANSI_WHITE "%c" ANSI_RESET, targetText[i]);
+        }
+    }
+    
+    printf("\n\n" ANSI_WHITE "Your Input:\n" ANSI_RESET);
+    
+    // Display user input with color coding
+    for (int i = 0; i < inputLen; i++) {
+        if (i < targetLen) {
+            if (userInput[i] == targetText[i]) {
+                printf(ANSI_GREEN "%c" ANSI_RESET, userInput[i]);
+            } else {
+                printf(ANSI_RED "%c" ANSI_RESET, userInput[i]);
+            }
+        } else {
+            // Extra characters beyond target
+            printf(ANSI_RED "%c" ANSI_RESET, userInput[i]);
+        }
+    }
+    
+    // Show cursor
+    printf(ANSI_YELLOW "_" ANSI_RESET);
+    
+    // Display statistics
+    printf("\n\n" ANSI_WHITE "Progress: %d/%d characters | Errors: %d | Time: %.1fs\n" ANSI_RESET, 
+           currentPos, targetLen, wrongChars, elapsedTime);
+    
+    if (currentPos > 0) {
+        double currentCPM = (currentPos / elapsedTime) * 60.0;
+        double currentWPM = currentCPM / 5.0;
+        printf("Current Speed: %.1f CPM (%.1f WPM)\n", currentCPM, currentWPM);
+    }
+    
+    printf("\n" ANSI_YELLOW "Controls: ESC=quit | Backspace=correct | Any key=type" ANSI_RESET "\n");
+    
+    fflush(stdout);
+}
+
+// Real-time input collection with live feedback
+void collectUserInputRealtime(const char* targetText, char *input, size_t inputSize, double *elapsedTime, TypingStats *stats) {
+    struct timeval startTime, currentTime;
+    gettimeofday(&startTime, NULL);
+    
+    int targetLen = strlen(targetText);
+    int currentPos = 0;
+    int wrongChars = 0;
+    char ch;
+    
+    // Initialize input buffer
+    memset(input, 0, inputSize);
+    
+    // Initialize real-time mode
+    initializeRealtimeMode();
+    
+    while (currentPos < targetLen) {
+        // Update elapsed time
+        gettimeofday(&currentTime, NULL);
+        *elapsedTime = (currentTime.tv_sec - startTime.tv_sec) + 
+                       (currentTime.tv_usec - startTime.tv_usec) / 1000000.0;
+        
+        // Display current state
+        displayRealtimeTyping(targetText, input, currentPos, wrongChars, *elapsedTime);
+        
+        // Get character input
+        ch = getRealTimeChar();
+        
+        // Handle special keys
+        if (ch == 27) { // ESC key
+            printf(ANSI_RED "\nTest cancelled by user.\n" ANSI_RESET);
+            input[0] = '\0'; // Clear input to indicate cancellation
+            return;
+        } else if (ch == 8 || ch == 127) { // Backspace
+            if (currentPos > 0) {
+                currentPos--;
+                input[currentPos] = '\0';
+                // Recalculate wrong characters
+                wrongChars = 0;
+                for (int i = 0; i < currentPos; i++) {
+                    if (input[i] != targetText[i]) {
+                        wrongChars++;
+                    }
+                }
+            }
+        } else if (ch >= 32 && ch <= 126 && currentPos < (int)(inputSize - 1)) { // Printable characters
+            input[currentPos] = ch;
+            input[currentPos + 1] = '\0';
+            
+            // Check if character is wrong
+            if (ch != targetText[currentPos]) {
+                wrongChars++;
+            }
+            
+            currentPos++;
+        }
+        
+        // Handle case where user types beyond target length
+        if (currentPos >= targetLen) {
+            input[targetLen] = '\0';
+            break;
+        }
+    }
+    
+    // Final display
+    gettimeofday(&currentTime, NULL);
+    *elapsedTime = (currentTime.tv_sec - startTime.tv_sec) + 
+                   (currentTime.tv_usec - startTime.tv_usec) / 1000000.0;
+    
+    clearScreen();
+    displayRealtimeTyping(targetText, input, currentPos, wrongChars, *elapsedTime);
+    
+    printf(ANSI_GREEN "\n=== Test Completed! ===\n" ANSI_RESET);
+    printf("Press any key to continue...\n");
+    getRealTimeChar();
+    
+    // Store stats for compatibility with existing system
+    stats->wrongChars = wrongChars;
+}
+
+// Prompt user to choose typing mode
+int promptTypingMode() {
+    int choice;
+    printf("\nSelect typing mode:\n");
+    printf("1. Classic Mode (type entire paragraph, then see results)\n");
+    printf("2. Real-Time Mode (see errors highlighted as you type)\n");
+    printf("Enter your choice (1-2): ");
+    
+    while (scanf("%d", &choice) != 1 || choice < 1 || choice > 2) {
+        printf("Invalid input. Please enter 1 or 2: ");
+        while (getchar() != '\n');
+    }
+    while (getchar() != '\n');
+    
+    return choice;
+}
+
+// ===== EXISTING FUNCTIONS =====
 
 // Load paragraphs into cache
 void loadParagraphs(FILE *file, ParagraphCache *cache)
@@ -531,6 +872,7 @@ void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
     printf("--------------------------------------------------------\n");
 }
 
+// Enhanced processAttempts function with real-time mode
 void processAttempts(ParagraphCache *cache)
 {
     printf("Welcome to Typing Tutor!\n");
@@ -543,8 +885,10 @@ void processAttempts(ParagraphCache *cache)
     TypingStats attempts[max_attempts];
     int numAttempts = 0;
     int caseChoice;
+    int typingMode;
 
     promptDifficulty(&difficulty, difficultyLevel);
+    typingMode = promptTypingMode(); // NEW: Ask for typing mode
 
     while (numAttempts < max_attempts)
     {
@@ -561,8 +905,24 @@ void processAttempts(ParagraphCache *cache)
             ;
 
         printf("\nType the following paragraph:\n%s\n", currentPara);
+        
         double elapsedTime;
-        collectUserInput(input, sizeof(input), &elapsedTime);
+        TypingStats currentAttempt = {.caseInsensitive = caseChoice};
+        
+        // NEW: Choose input method based on user preference
+        if (typingMode == 2) {
+            // Real-time mode
+            collectUserInputRealtime(currentPara, input, sizeof(input), &elapsedTime, &currentAttempt);
+            
+            // Check if user cancelled
+            if (strlen(input) == 0) {
+                printf("Attempt cancelled. Try again.\n");
+                continue;
+            }
+        } else {
+            // Classic mode (existing functionality)
+            collectUserInput(input, sizeof(input), &elapsedTime);
+        }
 
         size_t len = strlen(input);
         if (len > 0 && input[len - 1] == '\n')
@@ -574,7 +934,7 @@ void processAttempts(ParagraphCache *cache)
             continue;
         }
 
-        TypingStats currentAttempt = {.caseInsensitive = caseChoice};
+        // Continue with existing logic...
         printTypingStats(elapsedTime, input, currentPara, difficulty, &currentAttempt);
         attempts[numAttempts++] = currentAttempt;
 

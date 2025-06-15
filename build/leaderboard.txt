@@ -23,9 +23,13 @@ alice 120.50 24.10 98.00 Easy
 praveen 114.00 22.80 88.51 Easy
 bob 110.00 22.00 95.00 Easy
 carol 90.00 18.00 92.00 Easy
-dave 80.00 16.00 90.00 Easy
+Amitosh 80.63 16.13 100.00 Easy
 judy 105.00 21.00 93.00 Medium
 peggy 145.00 29.00 97.00 Hard
 trent 135.00 27.00 95.00 Hard
-eve 70.00 14.00 88.00 Easy
+Amitosh 80.63 16.13 100.00 Easy
 victor 125.00 25.00 94.00 Hard
+dave 80.00 16.00 90.00 Easy
+eve 70.00 14.00 88.00 Easy
+Amit 68.12 13.62 100.00 Easy
+Amitosh 44.53 8.91 100.00 Easy
