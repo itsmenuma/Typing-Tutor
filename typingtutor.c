@@ -76,6 +76,7 @@ void toLowerStr(char *dst, const char *src);
 void trim_newline(char *str);
 void promptDifficulty(Difficulty *difficulty, char *difficultyLevel);
 void displayPreviousAttempts(TypingStats attempts[], int numAttempts);
+void highlightErrors(const char *input, const char *correct, int caseInsensitive);
 
 // Load paragraphs into cache
 void loadParagraphs(FILE *file, ParagraphCache *cache)
@@ -531,6 +532,32 @@ void displayPreviousAttempts(TypingStats attempts[], int numAttempts)
     printf("--------------------------------------------------------\n");
 }
 
+void highlightErrors(const char *input, const char *correct, int caseInsensitive) {
+    printf("\nCorrect: %s\n", correct);
+    printf("Your input: ");
+    
+    for (int i = 0; i < strlen(input) && i < strlen(correct); i++) {
+        char c1 = correct[i];
+        char c2 = input[i];
+        
+        if (caseInsensitive) {
+            c1 = tolower(c1);
+            c2 = tolower(c2);
+        }
+        
+        if (c1 == c2) {
+            printf("\033[32m%c\033[0m", input[i]);
+        } else {
+            printf("\033[31;4m%c\033[0m", input[i]);
+        }
+    }
+    
+    for (int i = strlen(correct); i < strlen(input); i++) {
+        printf("\033[31;4m%c\033[0m", input[i]);
+    }
+    printf("\n");
+}
+
 void processAttempts(ParagraphCache *cache)
 {
     printf("Welcome to Typing Tutor!\n");
@@ -589,6 +616,8 @@ void processAttempts(ParagraphCache *cache)
         printf("Wrong Characters: %d\n", currentAttempt.wrongChars);
         printf("Time taken: %.2f seconds\n", elapsedTime);
         printf("--------------------------------------------------------\n");
+
+        highlightErrors(input, currentPara, caseChoice);
 
         printf("\nDo you want to continue? (y/n): ");
         char choice[3];
@@ -820,6 +849,8 @@ int main(int argc, char *argv[])
     {
         printf("Performance: Needs Improvement. Try to type faster!\n");
     }
+
+    highlightErrors(userInput, para, caseInsensitive);
 
     FILE *f = fopen("leaderboard.txt", "a");
     if (f)
