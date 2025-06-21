@@ -210,6 +210,76 @@ label[for="username"] {
   padding: 24px 18px 32px 18px;
 }
 
+/* Test Mode Styles */
+.test-mode-section {
+  margin-bottom: 18px;
+}
+
+.test-mode-section h3 {
+  color: #3e497a;
+  font-size: 1.1em;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.mode-buttons,
+.time-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.mode-btn,
+.time-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px 12px;
+  background: #e0e7ff;
+  color: #232946;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-btn.active,
+.time-btn.active {
+  background: #1976d2;
+  color: white;
+  font-weight: bold;
+}
+
+.mode-btn:hover:not(.active),
+.time-btn:hover:not(.active) {
+  background: #c7d2fe;
+}
+
+.time-duration {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f4f8ff;
+  border-radius: 8px;
+  border-left: 3px solid #1976d2;
+}
+
+.time-duration label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.timer {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #d32f2f;
+  background-color: #ffebee;
+  padding: 8px;
+  border-radius: 8px;
+  margin: 10px 0;
+  border: 1px solid #ffcdd2;
+}
+
 /* Responsive for tabs */
 @media (max-width: 600px) {
   .tab-btn {
@@ -226,6 +296,11 @@ label[for="username"] {
   }
   button, input[type="text"], textarea {
     font-size: 1rem;
+  }
+  .mode-buttons,
+  .time-buttons {
+    flex-direction: column;
+    gap: 5px;
   }
 }
 

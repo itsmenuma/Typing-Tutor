@@ -21,6 +21,21 @@
       </div>
       <div class="difficulty-section">
         <h2>Customize Test</h2>
+        <div class="test-mode-section">
+          <h3>Test Mode</h3>
+          <div class="mode-buttons">
+            <button id="paragraphModeBtn" class="mode-btn active" onclick="setTestMode('paragraph')">Paragraph</button>
+            <button id="timedModeBtn" class="mode-btn" onclick="setTestMode('timed')">Timed</button>
+          </div>
+          <div id="timeDurationContainer" class="time-duration" style="display:none;">
+            <label>Duration:</label>
+            <div class="time-buttons">
+              <button id="time1MinBtn" class="time-btn active" onclick="setTimeDuration(1)">1 min</button>
+              <button id="time3MinBtn" class="time-btn" onclick="setTimeDuration(3)">3 min</button>
+              <button id="time5MinBtn" class="time-btn" onclick="setTimeDuration(5)">5 min</button>
+            </div>
+          </div>
+        </div>
         <div class="difficulty-buttons">
           <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
           <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
@@ -32,6 +47,7 @@
         </label>
       </div>
       <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
+      <div id="timerDisplay" class="timer" style="display:none;">Time Left: <span id="timeLeft">0:00</span></div>
       <pre id="output"></pre>
       <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
       <button id="submitBtn" onclick="submitTyping()">Submit</button>
