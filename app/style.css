@@ -280,6 +280,36 @@ label[for="username"] {
   border: 1px solid #ffcdd2;
 }
 
+/* Dim input area after submission */
+#userInput.dimmed {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+/* Toast Styles */
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #3e497a;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 999;
+  animation: fadeInOut 2.5s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; bottom: 20px; }
+  10% { opacity: 1; bottom: 30px; }
+  90% { opacity: 1; bottom: 30px; }
+  100% { opacity: 0; bottom: 20px; }
+}
+
+
 /* Responsive for tabs */
 @media (max-width: 600px) {
   .tab-btn {

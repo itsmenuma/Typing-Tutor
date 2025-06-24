@@ -20,8 +20,10 @@ ivan 115.00 23.00 94.00 Medium
 Sarakshi 214.15 42.83 30.85 Easy
 Sarakshi 214.15 42.83 30.85 Easy
 virat 211.79 42.36 95.65 Easy
-Sarakshi 192.02 38.40 100.00 Easy
-Sarakshi 192.02 38.40 100.00 Easy
+Sarakshi 200.49 40.10 100.00 Easy
+Sarakshi 200.49 40.10 100.00 Easy
+Sarakshi 200.46 40.09 100.00 Easy
+Sarakshi 200.46 40.09 100.00 Easy
 Sarakshi 187.40 37.48 100.00 Easy
 Sarakshi 116.02 23.20 100.00 Easy
 Sarakshi 116.02 23.20 100.00 Easy
