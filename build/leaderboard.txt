@@ -17,6 +17,8 @@ oscar 150.00 30.00 98.00 Hard
 umar 220.95 44.19 100.00 Easy
 heidi 125.00 25.00 96.00 Medium
 ivan 115.00 23.00 94.00 Medium
+Sarakshi 214.15 42.83 30.85 Easy
+Sarakshi 214.15 42.83 30.85 Easy
 virat 211.79 42.36 95.65 Easy
 abhishek 137.58 27.52 100.00 Easy
 alice 120.50 24.10 98.00 Easy
@@ -33,3 +35,11 @@ dave 80.00 16.00 90.00 Easy
 eve 70.00 14.00 88.00 Easy
 Amit 68.12 13.62 100.00 Easy
 Amitosh 44.53 8.91 100.00 Easy
+
+Sarakshi 192.02 38.40 100.00 Easy
+Sarakshi 192.02 38.40 100.00 Easy
+Sarakshi 187.40 37.48 100.00 Easy
+Sarakshi 116.02 23.20 100.00 Easy
+Sarakshi 116.02 23.20 100.00 Easy
+Sarakshi 115.99 23.20 100.00 Easy
+

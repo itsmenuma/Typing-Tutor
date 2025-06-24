@@ -10,38 +10,53 @@
   <div id="main-container">
     <button id="muteBtn" onclick="toggleSound()" style="position: absolute; left: 77%; top: 10%;">Mute</button>
     <h1>Typing Tutor</h1>
+
     <div class="tabs">
       <button class="tab-btn active" id="tab-test" onclick="showTab('test')">Typing Test</button>
       <button class="tab-btn" id="tab-leaderboard" onclick="showTab('leaderboard')">Leaderboard</button>
     </div>
+
     <div id="tab-content-test">
       <div class="input-group">
         <label for="username">Name:</label>
         <input type="text" id="username" placeholder="Enter your name" maxlength="20">
       </div>
+
       <div class="difficulty-section">
         <h2>Customize Test</h2>
+
         <div class="difficulty-buttons">
           <button id="easyBtn" onclick="setDifficulty('Easy')">Easy</button>
           <button id="mediumBtn" onclick="setDifficulty('Medium')">Medium</button>
           <button id="hardBtn" onclick="setDifficulty('Hard')">Hard</button>
         </div>
+
         <label class="case-label">
           <input type="checkbox" id="caseSensitive" checked>
           Case Sensitive
         </label>
+
+        <label style="display: block; margin-top: 10px;">
+          <input type="checkbox" id="useCustomText" onchange="toggleCustomInput()">
+          Use custom paragraph input
+        </label>
+
+        <textarea id="customParagraph" rows="4" cols="60" placeholder="Enter custom paragraph..." disabled style="margin-top: 10px;"></textarea>
       </div>
+
       <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
       <pre id="output"></pre>
-      <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
+      <textarea id="userInput" rows="6" cols="60" placeholder="Type here..." disabled></textarea><br>
       <button id="submitBtn" onclick="submitTyping()">Submit</button>
       <div id="result"></div>
     </div>
+
     <div id="tab-content-leaderboard" style="display:none;">
       <h2>Leaderboard</h2>
       <pre id="leaderboard"></pre>
     </div>
   </div>
+
   <script src="renderer.js"></script>
   <script>
     function showTab(tab) {
@@ -51,9 +66,21 @@
       document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
       if(tab === 'leaderboard') showLeaderboard();
     }
+
+    function toggleCustomInput() {
+      const isCustom = document.getElementById('useCustomText').checked;
+      document.getElementById('customParagraph').disabled = !isCustom;
+
+      ['easyBtn', 'mediumBtn', 'hardBtn'].forEach(id => {
+        document.getElementById(id).disabled = isCustom;
+      });
+
+      checkStartConditions(); // Re-check conditions
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       showTab('test');
-      showLeaderboard(); 
+      showLeaderboard();
     });
   </script>
 </body>
