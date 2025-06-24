@@ -135,7 +135,7 @@ window.runTypingTutor = async function () {
 
         // Handle paragraph file error
         if (result.startsWith("ERROR:")) {
-            showToast(result.replace("ERROR:", "").trim());
+            showToast(result.replace("ERROR:", "").trim(), true); // Show and exit
             document.getElementById("output").innerText = "Could not load paragraph!";
             return;
         }
@@ -207,10 +207,10 @@ window.submitTyping = async function (isTimedEnd = false) {
   showLeaderboard();
 };
 
-// Add this function to show toast
-function showToast(message) {
+// Add this function to show toast and optionally exit the app
+function showToast(message, exitApp = false) {
   const toast = document.getElementById('toast');
-  toast.textContent = message;
+  toast.textContent = message + (exitApp ? " Exiting the app..." : "");
   toast.style.display = 'block';
 
   // Trigger reflow to restart animation
@@ -220,8 +220,12 @@ function showToast(message) {
 
   setTimeout(() => {
     toast.style.display = 'none';
+    if (exitApp) {
+      ipcRenderer.send('quit-app'); // Ask main process to exit
+    }
   }, 2500);
 }
+
 
 // Update showLeaderboard to use stored username
 window.showLeaderboard = async function() {

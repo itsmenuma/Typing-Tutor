@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { execFile } = require('child_process');
 const path = require('path');
 
@@ -17,15 +17,24 @@ function createWindow () {
 app.whenReady().then(createWindow);
 
 ipcMain.handle('run-typing-tutor', async (event, args) => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     execFile(
       path.join(__dirname, '../build/typingtutor.exe'),
       args,
-      { cwd: path.join(__dirname, '../build') }, // <--- Set working directory!
+      { cwd: path.join(__dirname, '../build') },
       (error, stdout, stderr) => {
-        if (error) return reject(stderr || error.message);
-        resolve(stdout);
+        if (error) {
+          resolve(`ERROR: ${stderr || error.message}`);
+        } else {
+          resolve(stdout);
+        }
       }
     );
   });
 });
+
+//IPC for exiting the app gracefully in case of crash
+ipcMain.on('quit-app', () => {
+  app.quit();
+});
+
