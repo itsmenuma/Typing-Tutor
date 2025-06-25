@@ -326,3 +326,560 @@ label[for="username"] {
     max-width: 700px;
   }
 }
+
+
+/* Style for the difficulty buttons */
+/* Difficulty buttons layout*/
+.difficulty-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.difficulty-buttons button {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.difficulty-section {
+  margin: 20px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.case-label {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.case-label input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* Real-time typing mode styles */
+.realtime-mode {
+    padding: 20px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    border-radius: 12px;
+    margin: 0;
+    outline: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.mode-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e0e7ff;
+    padding-bottom: 20px;
+}
+
+.mode-header h2 {
+    color: #e63946;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.user-info {
+    font-size: 14px;
+    color: #3e497a;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.controls-info {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 10px;
+}
+
+.control-item {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+/* Text display areas */
+.text-display, .input-display {
+    margin: 25px 0;
+    padding: 20px;
+    border: 2px solid #e0e7ff;
+    border-radius: 12px;
+    background: #f8f9fa;
+}
+
+.text-display h3, .input-display h3 {
+    margin: 0 0 15px 0;
+    color: #3e497a;
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.target-text, .user-input {
+    font-size: 20px;
+    line-height: 1.8;
+    min-height: 80px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Character highlighting */
+.char-correct {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 2px 1px;
+    border-radius: 3px;
+}
+
+.char-incorrect {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 2px 1px;
+    border-radius: 3px;
+    border: 1px solid #f5c6cb;
+}
+
+.char-current {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 2px 1px;
+    border-radius: 3px;
+    border: 2px solid #ffc107;
+    animation: pulse 1.5s infinite;
+}
+
+.char-pending {
+    color: #6c757d;
+    padding: 2px 1px;
+}
+
+.input-correct {
+    color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+    padding: 2px 1px;
+    border-radius: 3px;
+}
+
+.input-incorrect {
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.15);
+    padding: 2px 1px;
+    border-radius: 3px;
+    border-bottom: 2px solid #dc3545;
+}
+
+/* Cursor animation */
+.cursor {
+    display: inline-block;
+    background-color: #ffc107;
+    color: #856404;
+    padding: 2px 4px;
+    margin-left: 2px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.blink {
+    animation: blink 1s infinite;
+}
+
+/* Statistics dashboard */
+.stats-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin: 25px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Mode selection */
+.mode-selection {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.mode-selection h2 {
+    color: #3e497a;
+    font-size: 2em;
+    margin-bottom: 40px;
+}
+
+.mode-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.mode-card {
+    padding: 30px 25px;
+    border: 2px solid #e0e7ff;
+    border-radius: 15px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mode-card:hover {
+    border-color: #1976d2;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(25, 118, 210, 0.15);
+}
+
+.mode-card.highlight {
+    border-color: #e63946;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.mode-card.highlight:hover {
+    border-color: #c73e1d;
+    box-shadow: 0 8px 25px rgba(230, 57, 70, 0.2);
+}
+
+.mode-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.mode-card h3 {
+    color: #3e497a;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.mode-card p {
+    color: #6c757d;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.mode-features {
+    font-size: 14px;
+    color: #28a745;
+    font-weight: 500;
+    line-height: 1.6;
+    text-align: left;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+}
+
+/* Results display */
+.results-display {
+    text-align: center;
+    padding: 40px 30px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.results-display.success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+    color: #155724;
+}
+
+.results-display.warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #ffc107;
+    color: #856404;
+}
+
+.results-display h2 {
+    font-size: 2.2em;
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.final-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+    margin: 30px 0;
+}
+
+.stat-group {
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-group h3 {
+    color: #3e497a;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.big-stat {
+    font-size: 3em;
+    font-weight: bold;
+    color: #1976d2;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.stat-unit {
+    font-size: 1.1em;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.small-stat {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Buttons */
+.action-buttons {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(25, 118, 210, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(25, 118, 210, 0.4);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+    transform: translateY(-2px);
+}
+
+.back-button {
+    margin-top: 30px;
+    text-align: center;
+}
+
+/* Loading and error states */
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 1.2em;
+    color: #3e497a;
+}
+
+.error-message {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8d7da;
+    border: 2px solid #f5c6cb;
+    border-radius: 12px;
+    color: #721c24;
+}
+
+.error-message h3 {
+    color: #721c24;
+    margin-bottom: 15px;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.7; 
+        transform: scale(1.05);
+    }
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Responsive design for real-time mode */
+@media (max-width: 768px) {
+    .realtime-mode {
+        padding: 15px;
+    }
+    
+    .mode-header h2 {
+        font-size: 1.5em;
+    }
+    
+    .target-text, .user-input {
+        font-size: 16px;
+        padding: 15px;
+    }
+    
+    .stats-dashboard {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .stat-card {
+        padding: 15px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    .mode-options {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .mode-card {
+        padding: 25px 20px;
+    }
+    
+    .final-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .big-stat {
+        font-size: 2.5em;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        max-width: 250px;
+    }
+}
+
+@media (max-width: 600px) {
+  .difficulty-buttons {
+    flex-direction: column;
+  }
+  
+  .difficulty-buttons button {
+    width: 100%;
+    margin: 5px 0;
+  }
+}
+
+@media (max-width: 480px) {
+    .controls-info {
+        font-size: 11px;
+    }
+    
+    .control-item {
+        display: block;
+        margin: 2px 0;
+    }
+    
+    .target-text, .user-input {
+        font-size: 14px;
+        padding: 10px;
+        min-height: 60px;
+    }
+    
+    .mode-header {
+        padding-bottom: 15px;
+    }
+    
+    .text-display, .input-display {
+        padding: 15px;
+        margin: 20px 0;
+    }
+}
+
