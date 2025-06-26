@@ -1,1 +1,3 @@
 Pritam 19.00 3.80 44.19 medium
+amit 120.39 24.08 100.00 Easy
+amii 92.96 18.59 98.84 Easy
