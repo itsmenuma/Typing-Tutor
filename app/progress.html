@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress History - Typing Tutor</title>
+    <link rel="stylesheet" href="progress.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Your Typing Progress</h2>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="avgSpeed">0</div>
+                <div class="stat-label">Average Speed (WPM)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="avgAccuracy">0</div>
+                <div class="stat-label">Average Accuracy (%)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="totalTests">0</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+        </div>
+        
+        <div class="graph-container">
+            <svg class="graph" id="progressGraph" viewBox="0 0 700 260">
+                <!-- Grid lines -->
+                <defs>
+                    <pattern id="grid" width="35" height="26" patternUnits="userSpaceOnUse">
+                        <path d="M 35 0 L 0 0 0 26" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color speed-color"></div>
+                <span>Typing Speed (WPM)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color accuracy-color"></div>
+                <span>Accuracy (%)</span>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="back-btn" onclick="goBack()">Back to Main</button>
+        </div>
+    </div>
+
+    <script src="progress.js"></script>
+</body>
+</html>
