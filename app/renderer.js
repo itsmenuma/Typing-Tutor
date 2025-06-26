@@ -97,40 +97,84 @@ window.submitTyping = async function() {
     document.getElementById('result').innerText = statsMatch ? statsMatch[1].trim() : result;
     document.getElementById('submitBtn').disabled = true;
 
-    showLeaderboard();
+    // Wait a short moment to ensure file is written
+    setTimeout(() => {
+        showLeaderboard(selectedDifficulty);
+    }, 100);
 };
 
-window.showLeaderboard = async function() {
-    const user = currentUser || '';
-    const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-leaderboard', selectedDifficulty || "Easy", user]);
+async function showLeaderboard(difficulty = 'Easy') {
+  const entries = document.getElementById('leaderboard-entries');
+  entries.innerHTML = '';
 
-    const lines = result.trim().split('\n');
-    let leaderboardHTML = '';
-    let userHighlighted = false;
-    let count = 0;
-
-    for (let i = 0; i < lines.length && count < 10; i++) {
-        const line = lines[i];
-        if (line.includes(currentUser)) {
-            leaderboardHTML += `<span class="your-result">${line}</span>\n`;
-            userHighlighted = true;
-        } else {
-            leaderboardHTML += line + '\n';
-        }
-        count++;
+  try {
+    // Use IPC renderer to get leaderboard data
+    const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-leaderboard']);
+    if (!result) {
+      throw new Error('No leaderboard data received');
     }
 
-    if (!userHighlighted) {
-        for (let i = 10; i < lines.length; i++) {
-            if (lines[i].includes(currentUser)) {
-                leaderboardHTML += `\n<span class="your-result">Your Rank: ${i+1}: ${lines[i]}</span>\n`;
-                break;
-            }
-        }
-    }
+    // Parse the leaderboard data
+    const lines = result.trim().split('\n')
+      .filter(line => line.includes(difficulty))
+      .map(line => {
+        const [name, cpm, wpm, accuracy, diff] = line.split(' ');
+        return {
+          name,
+          cpm: parseFloat(cpm),
+          wpm: parseFloat(wpm),
+          accuracy: parseFloat(accuracy),
+          difficulty: diff
+        };
+      });
 
-    document.getElementById('leaderboard').innerHTML = leaderboardHTML;
-};
+    // Remove duplicates keeping highest score
+    const uniqueScores = lines.reduce((acc, current) => {
+      const existing = acc.find(item => item.name === current.name);
+      if (!existing || existing.cpm < current.cpm) {
+        const index = acc.findIndex(item => item.name === current.name);
+        if (index !== -1) {
+          acc.splice(index, 1);
+        }
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
+    // Sort by CPM descending
+    uniqueScores.sort((a, b) => b.cpm - a.cpm);
+
+    // Display top 10
+    uniqueScores.slice(0, 10).forEach((score, index) => {
+      const entry = document.createElement('div');
+      entry.className = `leaderboard-entry rank-${index + 1}`;
+      if (score.name === currentUser) {
+        entry.classList.add('highlight');
+      }
+
+      entry.innerHTML = `
+        <span class="rank-col">${index + 1}</span>
+        <span class="name-col">${score.name}</span>
+        <span class="speed-col">${score.cpm.toFixed(1)}</span>
+        <span class="wpm-col">${score.wpm.toFixed(1)}</span>
+        <span class="accuracy-col">${score.accuracy.toFixed(1)}%</span>
+      `;
+      entries.appendChild(entry);
+    });
+  } catch (error) {
+    console.error('Error loading leaderboard:', error);
+    entries.innerHTML = '<div class="error-message">Error loading leaderboard data</div>';
+  }
+}
+
+// Add difficulty tab handling
+document.querySelectorAll('.diff-tab').forEach(tab => {
+  tab.addEventListener('click', (e) => {
+    document.querySelectorAll('.diff-tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    showLeaderboard(e.target.dataset.difficulty);
+  });
+});
 
 document.getElementById('userInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -744,5 +788,117 @@ document.getElementById('userInput').addEventListener('keydown', function (e) {
         e.preventDefault();
         submitTyping();
     }
+});
+
+
+async function showFullLeaderboard(difficulty = 'Easy') {
+  // Create modal if it doesn't exist
+  let modal = document.getElementById('fullLeaderboardModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'fullLeaderboardModal';
+    modal.className = 'full-leaderboard-modal';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div class="difficulty-tabs">
+          <button class="diff-tab active" data-difficulty="Easy">Easy</button>
+          <button class="diff-tab" data-difficulty="Medium">Medium</button>
+          <button class="diff-tab" data-difficulty="Hard">Hard</button>
+        </div>
+        <div class="leaderboard-header">
+          <span class="rank-col">Rank</span>
+          <span class="name-col">Name</span>
+          <span class="speed-col">CPM</span>
+          <span class="wpm-col">WPM</span>
+          <span class="accuracy-col">Accuracy</span>
+        </div>
+        <div id="full-leaderboard-entries"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Add event listeners
+    modal.querySelector('.close-modal').onclick = () => {
+      modal.style.display = 'none';
+    };
+
+    modal.querySelector('.difficulty-tabs').addEventListener('click', (e) => {
+      if (e.target.classList.contains('diff-tab')) {
+        modal.querySelectorAll('.diff-tab').forEach(tab => tab.classList.remove('active'));
+        e.target.classList.add('active');
+        showFullLeaderboard(e.target.dataset.difficulty);
+      }
+    });
+  }
+
+  try {
+    const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-leaderboard']);
+    if (!result) throw new Error('No leaderboard data received');
+
+    const entries = document.getElementById('full-leaderboard-entries');
+    entries.innerHTML = '';
+
+    const lines = result.trim().split('\n')
+      .filter(line => line.includes(difficulty))
+      .map(line => {
+        const [name, cpm, wpm, accuracy, diff] = line.split(' ');
+        return {
+          name,
+          cpm: parseFloat(cpm),
+          wpm: parseFloat(wpm),
+          accuracy: parseFloat(accuracy),
+          difficulty: diff
+        };
+      });
+
+    // Remove duplicates keeping highest score
+    const uniqueScores = lines.reduce((acc, current) => {
+      const existing = acc.find(item => item.name === current.name);
+      if (!existing || existing.cpm < current.cpm) {
+        const index = acc.findIndex(item => item.name === current.name);
+        if (index !== -1) {
+          acc.splice(index, 1);
+        }
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
+    // Sort by CPM descending
+    uniqueScores.sort((a, b) => b.cpm - a.cpm);
+
+    // Display all entries
+    uniqueScores.forEach((score, index) => {
+      const entry = document.createElement('div');
+      entry.className = `leaderboard-entry rank-${index + 1}`;
+      if (score.name === currentUser) {
+        entry.classList.add('highlight');
+      }
+
+      entry.innerHTML = `
+        <span class="rank-col">${index + 1}</span>
+        <span class="name-col">${score.name}</span>
+        <span class="speed-col">${score.cpm.toFixed(1)}</span>
+        <span class="wpm-col">${score.wpm.toFixed(1)}</span>
+        <span class="accuracy-col">${score.accuracy.toFixed(1)}%</span>
+      `;
+      entries.appendChild(entry);
+    });
+
+    modal.style.display = 'block';
+  } catch (error) {
+    console.error('Error loading full leaderboard:', error);
+  }
+}
+
+// Add click handler for the view all button
+document.addEventListener('DOMContentLoaded', () => {
+  // ...existing DOMContentLoaded code...
+  
+  document.getElementById('viewAllBtn').addEventListener('click', () => {
+    const activeDifficulty = document.querySelector('.diff-tab.active').dataset.difficulty;
+    showFullLeaderboard(activeDifficulty);
+  });
 });
 

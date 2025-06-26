@@ -52,8 +52,28 @@
     </div>
 
     <div id="tab-content-leaderboard" style="display:none;">
-      <h2>Leaderboard</h2>
-      <pre id="leaderboard"></pre>
+      <div class="leaderboard-container">
+        <div class="difficulty-tabs">
+          <button class="diff-tab active" data-difficulty="Easy">Easy</button>
+          <button class="diff-tab" data-difficulty="Medium">Medium</button>
+          <button class="diff-tab" data-difficulty="Hard">Hard</button>
+        </div>
+        
+        <div class="leaderboard-content">
+          <div class="leaderboard-header">
+            <span class="rank-col">Rank</span>
+            <span class="name-col">Name</span>
+            <span class="speed-col">CPM</span>
+            <span class="wpm-col">WPM</span>
+            <span class="accuracy-col">Accuracy</span>
+          </div>
+          <div id="leaderboard-entries"></div>
+          
+          <div class="view-all-container">
+            <button id="viewAllBtn" class="view-all-btn">View Full Leaderboard</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
