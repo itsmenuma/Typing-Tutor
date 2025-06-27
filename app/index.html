@@ -55,7 +55,7 @@
 
           <!-- Custom paragraph toggle -->
           <label style="display: block; margin-top: 10px;">
-            <input type="checkbox" id="useCustomText">
+            <input type="checkbox" id="useCustomText" onchange="toggleCustomInput()">
             Use custom paragraph input
           </label>
 
@@ -66,16 +66,42 @@
         <button id="startBtn" onclick="runTypingTutor()" disabled>Start Typing Test</button>
         <div id="timerDisplay" class="timer" style="display:none;">Time Left: <span id="timeLeft">0:00</span></div>
         <pre id="output"></pre>
-        <textarea id="userInput" rows="6" cols="60" placeholder="Type here..."></textarea><br>
+        <textarea id="userInput" rows="6" cols="60" placeholder="Type here..." disabled></textarea><br>
         <button id="submitBtn" onclick="submitTyping()">Submit</button>
 
-        <div id="result"></div>
+        <!-- Export button (disabled by default) -->
+        <button id="exportBtn" onclick="exportStats()" disabled>Export Stats</button>
+
+        <!-- <div id="result"></div> -->
       </div>
     </div>
 
-    <div id="tab-content-leaderboard">
-        <h2>Leaderboard</h2>
-        <pre id="leaderboard"></pre>
+    <div id="tab-content-leaderboard" style="display:none;">
+      <div class="leaderboard-container">
+        <h2>Leaderboard</h2> <!-- Retained for consistency with original UI -->
+        <div class="difficulty-tabs">
+          <button class="diff-tab active" data-difficulty="Easy">Easy</button>
+          <button class="diff-tab" data-difficulty="Medium">Medium</button>
+          <button class="diff-tab" data-difficulty="Hard">Hard</button>
+        </div>
+        
+        <div class="leaderboard-content">
+          <div class="leaderboard-header">
+            <span class="rank-col">Rank</span>
+            <span class="name-col">Name</span>
+            <span class="speed-col">CPM</span>
+            <span class="wpm-col">WPM</span>
+            <span class="accuracy-col">Accuracy</span>
+          </div>
+          <div id="leaderboard-entries"></div>
+          
+          <div class="view-all-container">
+            <button id="viewAllBtn" class="view-all-btn">View Full Leaderboard</button>
+          </div>
+        </div>
+        <!-- Legacy leaderboard display for compatibility -->
+        <pre id="leaderboard" style="display:none;"></pre>
+      </div>
     </div>
   </div>
 
@@ -83,13 +109,14 @@
 
   <script src="renderer.js"></script>
   <script>
-    function showTab(tab) {
+        function showTab(tab) {
       document.getElementById('tab-content-test').style.display = tab === 'test' ? '' : 'none';
-      document.getElementById('tab-content-leaderboard').style.display = tab === 'leaderboard' ? '' : 'none';
+      document.getElementById('tab-content-leaderboard').style.display = tab === 'leaderboard' ? '' : 'none'; // ✅ fixed typo
       document.getElementById('tab-test').classList.toggle('active', tab === 'test');
       document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
-      if (tab === 'leaderboard') showLeaderboard();
+      if (tab === 'leaderboard') showLeaderboard(); // ✅ now it works
     }
+
 
     function toggleCustomInput() {
       const isCustom = document.getElementById('useCustomText').checked;

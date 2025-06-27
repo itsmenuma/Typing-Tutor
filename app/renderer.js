@@ -477,7 +477,7 @@ window.runTypingTutor = async function(isRestart = false) {
         }
 
         // ✅ Restore full test UI (only now after paragraph loads)
-        document.getElementById('tab-content-test').innerHTML = originalTestHTML; // You should store this at startup
+        //document.getElementById('tab-content-test').innerHTML = originalTestHTML; // You should store this at startup
         realtimeTyping = new RealtimeTypingMode(currentParagraph, testMode === 'timed');
         realtimeTyping.initialize();
     } catch (error) {
