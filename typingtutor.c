@@ -445,6 +445,18 @@ void loadParagraphs(FILE *file, ParagraphCache *cache)
     }
 }
 
+void save_progress(int wpm, int accuracy) {
+    FILE *file = fopen("progress.txt", "a");
+    if (file) {
+        time_t now = time(0);
+        struct tm *t = localtime(&now);
+        fprintf(file, "%d,%d,%04d-%02d-%02d\n", 
+                wpm, accuracy, 
+                t->tm_year+1900, t->tm_mon+1, t->tm_mday);
+        fclose(file);
+    }
+}
+
 // Load paragraphs for specific difficulty into cache
 void loadParagraphsForDifficulty(FILE *file, ParagraphCache *cache, const char *difficultyLevel)
 {
