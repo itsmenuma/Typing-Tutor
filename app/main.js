@@ -18,14 +18,17 @@ function createWindow() {
 app.whenReady().then(createWindow);
 
 ipcMain.handle('run-typing-tutor', async (event, args) => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     execFile(
       path.join(__dirname, '../build/typingtutor.exe'),
       args,
       { cwd: path.join(__dirname, '../build') },
       (error, stdout, stderr) => {
-        if (error) return reject(stderr || error.message);
-        resolve(stdout);
+        if (error) {
+          resolve(`ERROR: ${stderr || error.message}`);  // ✅ Graceful error
+        } else {
+          resolve(stdout);
+        }
       }
     );
   });
@@ -56,3 +59,9 @@ ipcMain.handle('export-stats', async (event, statsArray) => {
   fs.writeFileSync(filePath, content, 'utf-8');
   return true;
 });
+
+//IPC for exiting the app gracefully in case of crash
+ipcMain.on('quit-app', () => {
+  app.quit();
+});
+

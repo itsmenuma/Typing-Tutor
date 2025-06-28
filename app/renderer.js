@@ -448,9 +448,11 @@ window.runTypingTutor = async function(isRestart = false) {
     const useCustom = document.getElementById('useCustomText')?.checked;
     const customText = document.getElementById('customParagraph')?.value.trim();
 
-    if (!isRestart) {
-        if (!selectedDifficulty && !useCustom) return;
-        document.getElementById('tab-content-test').innerHTML = '<div class="loading">Loading paragraph...</div>';
+    // ✅ Only show loading UI if not restarting AND file is not custom
+    if (!isRestart && !useCustom) {
+        document.getElementById('tab-content-test').innerHTML = `
+            <div class="loading">Loading...</div>
+        `;
     }
 
     try {
@@ -458,24 +460,28 @@ window.runTypingTutor = async function(isRestart = false) {
             currentParagraph = customText;
         } else {
             const result = await ipcRenderer.invoke('run-typing-tutor', ['--get-paragraph', selectedDifficulty]);
+
+            // ✅ Handle file read failure from backend
+            if (result.startsWith("ERROR:")) {
+                showToast(result.replace("ERROR:", "").trim(), true); // toast and quit
+                return;
+            }
+
             const match = result.match(/Random Paragraph:\s*([\s\S]*)/);
             currentParagraph = match ? match[1].trim() : '';
+
+            if (!currentParagraph) {
+                showToast("Paragraph could not be loaded", true); // fallback toast and quit
+                return;
+            }
         }
 
-        if (!currentParagraph) {
-            throw new Error('Could not load paragraph');
-        }
-
+        // ✅ Restore full test UI (only now after paragraph loads)
+        //document.getElementById('tab-content-test').innerHTML = originalTestHTML; // You should store this at startup
         realtimeTyping = new RealtimeTypingMode(currentParagraph, testMode === 'timed');
         realtimeTyping.initialize();
     } catch (error) {
-        document.getElementById('tab-content-test').innerHTML = `
-            <div class="error-message">
-                <h3>Error loading paragraph</h3>
-                <p>${error.message}</p>
-                <button onclick="runTypingTutor()" class="btn-primary">Try Again</button>
-            </div>
-        `;
+        showToast("Unexpected error: " + error.message, true);
     }
 };
 
@@ -840,18 +846,19 @@ function toggleSound() {
 }
 
 // Show toast notification
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.style.display = 'block';
+function showToast(message, exitApp = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message + (exitApp ? " Exiting the app..." : "");
+  toast.style.display = 'block';
 
-    toast.style.animation = 'none';
-    void toast.offsetHeight;
-    toast.style.animation = '';
+  toast.style.animation = 'none';
+  void toast.offsetHeight;
+  toast.style.animation = '';
 
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 2500);
+  setTimeout(() => {
+    toast.style.display = 'none';
+    if (exitApp) ipcRenderer.send('quit-app');
+  }, 2500);
 }
 
 function playKeySound(e) {

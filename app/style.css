@@ -403,6 +403,182 @@ label[for="username"] {
   margin-right: 4px;
 }
 
+/* Dim input area after submission */
+#userInput.dimmed {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+/* Toast Styles */
+#toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #3e497a;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  z-index: 999;
+  animation: fadeInOut 2.5s ease-in-out;
+  white-space: pre-line;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; bottom: 20px; }
+  10% { opacity: 1; bottom: 30px; }
+  90% { opacity: 1; bottom: 30px; }
+  100% { opacity: 0; bottom: 20px; }
+}
+
+
+/* Responsive for tabs */
+@media (max-width: 600px) {
+  .tab-btn {
+    font-size: 1em;
+    padding: 12px 0;
+  }
+  #main-container {
+    max-width: 98vw;
+    margin: 8px;
+    padding: 12px 4vw 18px 4vw;
+  }
+  h1 {
+    font-size: 1.3rem;
+  }
+  button, input[type="text"], textarea {
+    font-size: 1rem;
+  }
+  .mode-buttons,
+  .time-buttons {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 420px) {
+  .difficulty-buttons {
+    flex-direction: column;
+    gap: 6px;
+  }
+  button {
+    width: 100%;
+    margin: 0 0 6px 0;
+  }
+}
+
+@media (max-width: 1000px) {
+  #main-flex {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  #leaderboard-container {
+    margin-top: 24px;
+    max-width: 700px;
+  }
+}
+
+
+.error-message {
+  color: #ef4444;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.view-all-container {
+  text-align: center;
+  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.view-all-btn {
+  background: #3b82f6;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.view-all-btn:hover {
+  background: #2563eb;
+}
+
+.full-leaderboard-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-content {
+  position: relative;
+  background: white;
+  margin: 50px auto;
+  padding: 20px;
+  max-width: 800px;
+  max-height: 80vh;
+  border-radius: 12px;
+  overflow-y: auto;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #64748b;
+}
+
+/* Style for the difficulty buttons */
+/* Difficulty buttons layout*/
+.difficulty-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.difficulty-buttons button {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.difficulty-section {
+  margin: 20px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.case-label {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.case-label input[type="checkbox"] {
+  margin-right: 8px;
+}
+
 /* Real-time typing mode styles */
 .realtime-mode {
   padding: 20px;
